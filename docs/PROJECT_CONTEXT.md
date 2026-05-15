@@ -88,7 +88,7 @@ When the next session opens, start here:
 | Area | Decision | Why |
 |---|---|---|
 | Python target | 3.11 + 3.12 (CI matrix) | Forward-compat coverage without paying for 3.10 back-compat |
-| Repo | github.com/argus-ai/platform | Org repo signals project, not personal experiment |
+| Repo | github.com/argus-engine/argus-ai | Org repo signals project, not personal experiment |
 | Distribution / import | `argus-risk` on PyPI, import as `argus` | `argus` import name was the user's pick; PyPI name disambiguates |
 | Kaggle auth | `~/.kaggle/kaggle.json` | Kaggle's canonical path; CI secret-to-file friendly |
 | GPU target | NVIDIA CUDA 12.x | User has the hardware; gpu Docker variant + compose profile |

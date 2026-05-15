@@ -5,7 +5,7 @@
 
 **Multimodal, explainable, uncertainty-aware risk intelligence for high-stakes decisions.**
 
-[![CI](https://github.com/argus-ai/platform/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/argus-ai/platform/actions/workflows/ci.yml)
+[![CI](https://github.com/argus-engine/argus-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/argus-engine/argus-ai/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776ab.svg?logo=python&logoColor=white)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -102,7 +102,7 @@ Responsible-AI commitments (intended use, limitations, bias considerations, data
 
 ```bash
 # 1. Clone
-git clone https://github.com/argus-ai/platform.git argus && cd argus
+git clone https://github.com/argus-engine/argus-ai.git argus && cd argus
 
 # 2. Install (Python 3.11 or 3.12)
 python -m venv .venv

@@ -111,10 +111,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/argus-ai/platform"
-Repository = "https://github.com/argus-ai/platform"
-Documentation = "https://github.com/argus-ai/platform/blob/main/docs/architecture.md"
-Issues = "https://github.com/argus-ai/platform/issues"
+Homepage = "https://github.com/argus-engine/argus-ai"
+Repository = "https://github.com/argus-engine/argus-ai"
+Documentation = "https://github.com/argus-engine/argus-ai/blob/main/docs/architecture.md"
+Issues = "https://github.com/argus-engine/argus-ai/issues"
 
 [project.scripts]
 argus = "argus.cli:app"

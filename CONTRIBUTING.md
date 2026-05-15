@@ -7,7 +7,7 @@ contribution workflow exists to keep it that way.
 ## Dev setup
 
 ```bash
-git clone https://github.com/argus-ai/platform.git argus && cd argus
+git clone https://github.com/argus-engine/argus-ai.git argus && cd argus
 
 python -m venv .venv
 source .venv/bin/activate          # Windows PowerShell: .\.venv\Scripts\Activate.ps1
