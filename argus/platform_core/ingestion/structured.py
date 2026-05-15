@@ -66,7 +66,7 @@ class StructuredCSVConnector(Connector[StructuredCSVConfig]):
         cfg = self.config
         with cfg.csv_path.open(encoding=cfg.encoding, newline="") as fh:
             reader = csv.DictReader(fh, delimiter=cfg.delimiter)
-            fieldnames = reader.fieldnames or []
+            fieldnames = list(reader.fieldnames or [])
             if not fieldnames:
                 return  # empty file — no header, no rows
             self._validate_columns(fieldnames)

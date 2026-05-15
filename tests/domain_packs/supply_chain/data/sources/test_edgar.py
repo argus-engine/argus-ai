@@ -181,8 +181,8 @@ class TestDownloadEdgarSample:
         )
         recent = payload["filings"]["recent"]  # type: ignore[index]
         for accession, primary in zip(
-            recent["accessionNumber"],  # type: ignore[index]
-            recent["primaryDocument"],  # type: ignore[index]
+            recent["accessionNumber"],
+            recent["primaryDocument"],
             strict=True,
         ):
             httpx_mock.add_response(

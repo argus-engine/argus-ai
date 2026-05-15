@@ -9,7 +9,7 @@ Each concrete connector ships its own test file in the same directory.
 from __future__ import annotations
 
 from collections.abc import Iterator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -23,7 +23,6 @@ from argus.platform_core.ingestion.base import (
     RecordStream,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -35,7 +34,7 @@ def _record(record_id: str = "1", *, source: str = "test_source") -> RawRecord:
         source=source,
         modality=Modality.STRUCTURED,
         payload={"value": 1},
-        ingested_at=datetime.now(timezone.utc),
+        ingested_at=datetime.now(UTC),
     )
 
 
@@ -74,7 +73,9 @@ class TestModality:
         assert {m.value for m in Modality} == {"structured", "text", "time_series"}
 
     def test_is_a_string_enum(self) -> None:
-        assert Modality.STRUCTURED == "structured"
+        # StrEnum members compare equal to their string values at runtime;
+        # mypy is conservative about Literal-vs-str equality, hence the ignore.
+        assert Modality.STRUCTURED == "structured"  # type: ignore[comparison-overlap]
         assert Modality("text") is Modality.TEXT
 
 
@@ -85,7 +86,7 @@ class TestModality:
 
 class TestRawRecord:
     def test_minimal_valid_record_round_trips(self) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         rec = RawRecord(
             record_id="abc",
             source="src",
@@ -101,7 +102,7 @@ class TestRawRecord:
     def test_is_frozen(self) -> None:
         rec = _record()
         with pytest.raises(ValidationError):
-            rec.record_id = "tampered"  # type: ignore[misc]
+            rec.record_id = "tampered"
 
     def test_extra_fields_are_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -110,7 +111,7 @@ class TestRawRecord:
                 source="src",
                 modality=Modality.STRUCTURED,
                 payload={},
-                ingested_at=datetime.now(timezone.utc),
+                ingested_at=datetime.now(UTC),
                 surprise="field",
             )
 
@@ -121,7 +122,7 @@ class TestRawRecord:
             "source": "src",
             "modality": Modality.STRUCTURED,
             "payload": {},
-            "ingested_at": datetime.now(timezone.utc),
+            "ingested_at": datetime.now(UTC),
         }
         kwargs[field] = ""
         with pytest.raises(ValidationError):
@@ -134,7 +135,7 @@ class TestRawRecord:
                 source="src",
                 modality=Modality.STRUCTURED,
                 payload={},
-                ingested_at=datetime(2026, 1, 1),  # naive  # noqa: DTZ001
+                ingested_at=datetime(2026, 1, 1),  # naive
             )
 
     def test_timestamp_must_be_timezone_aware_when_set(self) -> None:
@@ -144,8 +145,8 @@ class TestRawRecord:
                 source="src",
                 modality=Modality.STRUCTURED,
                 payload={},
-                ingested_at=datetime.now(timezone.utc),
-                timestamp=datetime(2026, 1, 1),  # noqa: DTZ001
+                ingested_at=datetime.now(UTC),
+                timestamp=datetime(2026, 1, 1),
             )
 
     def test_provenance_joins_source_and_id(self) -> None:
@@ -175,7 +176,7 @@ class TestRecordBatch:
     def test_is_frozen(self) -> None:
         batch = RecordBatch(records=(_record(),))
         with pytest.raises(ValidationError):
-            batch.batch_id = "tampered"  # type: ignore[misc]
+            batch.batch_id = "tampered"
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +233,7 @@ class TestConnectorConfig:
     def test_is_frozen(self) -> None:
         cfg = _TestConfig(name="t", source="s")
         with pytest.raises(ValidationError):
-            cfg.name = "tampered"  # type: ignore[misc]
+            cfg.name = "tampered"
 
     def test_subclass_inherits_base_fields(self) -> None:
         cfg = _TestConfig(name="t", source="s", extra_field="hello")

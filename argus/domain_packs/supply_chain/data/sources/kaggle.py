@@ -66,7 +66,7 @@ def _default_client_factory() -> KaggleApiClient:
     """
     from kaggle.api.kaggle_api_extended import KaggleApi  # noqa: PLC0415
 
-    return KaggleApi()
+    return KaggleApi()  # type: ignore[no-any-return]  # kaggle package ships no stubs
 
 
 def download_dataco(

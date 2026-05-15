@@ -54,8 +54,7 @@ class TextDocumentConfig(ConnectorConfig):
         default=0,
         ge=0,
         description=(
-            "Characters of overlap between adjacent chunks. Must be smaller "
-            "than ``chunk_size``."
+            "Characters of overlap between adjacent chunks. Must be smaller than ``chunk_size``."
         ),
     )
 

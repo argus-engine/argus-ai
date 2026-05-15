@@ -17,7 +17,7 @@ from typer.testing import CliRunner
 from scripts.build_fixtures import app, sample_csv
 
 
-@pytest.fixture()
+@pytest.fixture
 def runner() -> CliRunner:
     return CliRunner()
 
@@ -88,9 +88,7 @@ class TestSampleCsv:
 
 
 class TestBuildFixturesCli:
-    def test_no_inputs_logs_hint_and_exits_zero(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_no_inputs_logs_hint_and_exits_zero(self, runner: CliRunner, tmp_path: Path) -> None:
         source = tmp_path / "data"
         output = tmp_path / "fixtures"
         # No dataco/ subdir at all
@@ -105,9 +103,7 @@ class TestBuildFixturesCli:
         )
         assert result.exit_code == 0, result.output
 
-    def test_processes_dataco_orders_when_present(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_processes_dataco_orders_when_present(self, runner: CliRunner, tmp_path: Path) -> None:
         source = tmp_path / "data"
         dataco_dir = source / "dataco"
         _make_csv(dataco_dir / "orders.csv", n_rows=50)
@@ -130,9 +126,7 @@ class TestBuildFixturesCli:
         # Header + 10 sampled rows
         assert len(derived.read_text(encoding="utf-8").splitlines()) == 11
 
-    def test_processes_multiple_dataco_files(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_processes_multiple_dataco_files(self, runner: CliRunner, tmp_path: Path) -> None:
         source = tmp_path / "data"
         dataco_dir = source / "dataco"
         _make_csv(dataco_dir / "orders.csv", n_rows=20)
@@ -154,9 +148,7 @@ class TestBuildFixturesCli:
         assert (output / "dataco_orders.csv").exists()
         assert (output / "dataco_suppliers.csv").exists()
 
-    def test_seed_round_trip_deterministic(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_seed_round_trip_deterministic(self, runner: CliRunner, tmp_path: Path) -> None:
         source = tmp_path / "data"
         dataco_dir = source / "dataco"
         _make_csv(dataco_dir / "orders.csv", n_rows=100)
@@ -181,9 +173,7 @@ class TestBuildFixturesCli:
             output_b / "dataco_orders.csv"
         ).read_bytes()
 
-    def test_custom_sample_size_respected(
-        self, runner: CliRunner, tmp_path: Path
-    ) -> None:
+    def test_custom_sample_size_respected(self, runner: CliRunner, tmp_path: Path) -> None:
         source = tmp_path / "data"
         dataco_dir = source / "dataco"
         _make_csv(dataco_dir / "orders.csv", n_rows=200)

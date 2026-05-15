@@ -81,7 +81,7 @@ class TimeSeriesConnector(Connector[TimeSeriesConfig]):
         cfg = self.config
         with cfg.data_path.open(encoding=cfg.encoding, newline="") as fh:
             reader = csv.DictReader(fh, delimiter=cfg.delimiter)
-            fieldnames = reader.fieldnames or []
+            fieldnames = list(reader.fieldnames or [])
             if not fieldnames:
                 return
             self._validate_columns(fieldnames)
@@ -100,9 +100,7 @@ class TimeSeriesConnector(Connector[TimeSeriesConfig]):
                     entity = (row.get(cfg.entity_column) or "").strip() or None
 
                 record_id = (
-                    f"{entity}@{raw_ts}"
-                    if entity is not None
-                    else f"row{row_idx:06d}@{raw_ts}"
+                    f"{entity}@{raw_ts}" if entity is not None else f"row{row_idx:06d}@{raw_ts}"
                 )
 
                 payload: dict[str, object] = {

@@ -31,15 +31,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any, Generic, TypeVar
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-class Modality(str, Enum):
+class Modality(StrEnum):
     """The three input modalities Argus handles in its first phase."""
 
     STRUCTURED = "structured"
@@ -65,7 +65,7 @@ def parse_timestamp(raw: str, fmt: str | None = None) -> datetime:
     """
     ts = datetime.strptime(raw, fmt) if fmt else datetime.fromisoformat(raw)
     if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
+        ts = ts.replace(tzinfo=UTC)
     return ts
 
 
@@ -251,7 +251,7 @@ class Connector(ABC, Generic[ConfigT]):
             modality=self.modality,
             payload=payload,
             timestamp=timestamp,
-            ingested_at=datetime.now(timezone.utc),
+            ingested_at=datetime.now(UTC),
             schema_version=schema_version,
         )
 

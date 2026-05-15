@@ -31,9 +31,7 @@ SPDX_RE = re.compile(r"SPDX-License-Identifier:\s*Apache-2\.0")
 LOOKAHEAD_LINES = 10
 """Number of lines from the top of the file to scan for the identifier."""
 
-CHECKED_SUFFIXES = frozenset(
-    {".py", ".md", ".yaml", ".yml", ".toml", ".sh", ".bash"}
-)
+CHECKED_SUFFIXES = frozenset({".py", ".md", ".yaml", ".yml", ".toml", ".sh", ".bash"})
 """File suffixes that must carry an SPDX header."""
 
 EXEMPT_FILENAMES = frozenset(

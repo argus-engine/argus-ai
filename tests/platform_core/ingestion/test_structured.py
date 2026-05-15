@@ -3,10 +3,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from argus.platform_core.ingestion.base import Modality
 from argus.platform_core.ingestion.structured import (
@@ -15,17 +16,17 @@ from argus.platform_core.ingestion.structured import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def orders_csv(fixtures_dir: Path) -> Path:
     return fixtures_dir / "ingestion" / "structured" / "orders.csv"
 
 
-@pytest.fixture()
+@pytest.fixture
 def bad_csv(fixtures_dir: Path) -> Path:
     return fixtures_dir / "ingestion" / "structured" / "bad_missing_id.csv"
 
 
-@pytest.fixture()
+@pytest.fixture
 def semicolon_csv(fixtures_dir: Path) -> Path:
     return fixtures_dir / "ingestion" / "structured" / "semicolon_delimited.csv"
 
@@ -44,8 +45,6 @@ class TestStructuredCSVConfig:
         assert cfg.timestamp_column is None
 
     def test_delimiter_must_be_single_char(self, orders_csv: Path) -> None:
-        from pydantic import ValidationError
-
         with pytest.raises(ValidationError):
             StructuredCSVConfig(
                 name="orders",
@@ -130,7 +129,7 @@ class TestStructuredCSVConnector:
             )
         )
         first = next(iter(connector.pull()))
-        assert first.timestamp == datetime(2024, 1, 15, 10, 30, tzinfo=timezone.utc)
+        assert first.timestamp == datetime(2024, 1, 15, 10, 30, tzinfo=UTC)
 
     def test_missing_id_column_raises(self, bad_csv: Path) -> None:
         connector = StructuredCSVConnector(

@@ -103,8 +103,7 @@ class TestSupplier:
     def test_is_frozen(self) -> None:
         s = _supplier()
         with pytest.raises(ValidationError):
-            s.name = "Tampered"  # type: ignore[misc]
-
+            s.name = "Tampered"
 
 # ---------------------------------------------------------------------------
 # Order
@@ -149,8 +148,7 @@ class TestOrder:
     def test_is_frozen(self) -> None:
         o = _order()
         with pytest.raises(ValidationError):
-            o.quantity = 99  # type: ignore[misc]
-
+            o.quantity = 99
 
 # ---------------------------------------------------------------------------
 # Shipment
@@ -260,4 +258,4 @@ class TestEventSignal:
     def test_is_frozen(self) -> None:
         e = self._event()
         with pytest.raises(ValidationError):
-            e.title = "Tampered"  # type: ignore[misc]
+            e.title = "Tampered"

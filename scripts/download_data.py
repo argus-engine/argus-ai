@@ -23,8 +23,8 @@ from __future__ import annotations
 
 import logging
 import sys
-from datetime import datetime, timedelta, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -47,7 +47,7 @@ from argus.domain_packs.supply_chain.data.sources import (  # noqa: E402
 )
 
 
-class Source(str, Enum):
+class Source(StrEnum):
     """Which upstream to fetch."""
 
     KAGGLE = "kaggle"
@@ -116,14 +116,14 @@ def main(
             "--gdelt-start",
             help="GDELT subset window start (UTC). ISO 8601.",
         ),
-    ] = datetime(2024, 1, 15, tzinfo=timezone.utc),
+    ] = datetime(2024, 1, 15, tzinfo=UTC),
     gdelt_end: Annotated[
         datetime,
         typer.Option(
             "--gdelt-end",
             help="GDELT subset window end (UTC). ISO 8601.",
         ),
-    ] = datetime(2024, 1, 22, tzinfo=timezone.utc),
+    ] = datetime(2024, 1, 22, tzinfo=UTC),
     verbose: Annotated[
         bool,
         typer.Option("--verbose", "-v", help="Enable debug-level logging."),
@@ -135,9 +135,9 @@ def main(
     # Typer parses --gdelt-start/--gdelt-end as datetimes but they may come
     # in naive on certain platforms; coerce to UTC for safety.
     if gdelt_start.tzinfo is None:
-        gdelt_start = gdelt_start.replace(tzinfo=timezone.utc)
+        gdelt_start = gdelt_start.replace(tzinfo=UTC)
     if gdelt_end.tzinfo is None:
-        gdelt_end = gdelt_end.replace(tzinfo=timezone.utc)
+        gdelt_end = gdelt_end.replace(tzinfo=UTC)
 
     sources = _expand_source_selection(source)
     logger.info(

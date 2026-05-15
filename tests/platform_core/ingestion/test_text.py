@@ -15,7 +15,7 @@ from argus.platform_core.ingestion.text import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def text_dir(fixtures_dir: Path) -> Path:
     return fixtures_dir / "ingestion" / "text"
 

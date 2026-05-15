@@ -8,24 +8,23 @@ touching the live APIs.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 from typer.testing import CliRunner
 
-import scripts.download_data as download_data
+from scripts import download_data
 from scripts.download_data import Source, app
 
 
-@pytest.fixture()
+@pytest.fixture
 def runner() -> CliRunner:
     return CliRunner()
 
 
-@pytest.fixture()
+@pytest.fixture
 def stubbed_downloaders(monkeypatch: pytest.MonkeyPatch) -> dict[str, MagicMock]:
     """Replace each downloader on the script module with a recording mock."""
     mocks: dict[str, MagicMock] = {
@@ -58,9 +57,7 @@ class TestSourceSelection:
         stubbed_downloaders: dict[str, MagicMock],
         tmp_path: Path,
     ) -> None:
-        result = runner.invoke(
-            app, ["--source", "kaggle", "--output-dir", str(tmp_path)]
-        )
+        result = runner.invoke(app, ["--source", "kaggle", "--output-dir", str(tmp_path)])
         assert result.exit_code == 0, result.output
         stubbed_downloaders["dataco"].assert_called_once()
         stubbed_downloaders["gdelt"].assert_not_called()
@@ -72,9 +69,7 @@ class TestSourceSelection:
         stubbed_downloaders: dict[str, MagicMock],
         tmp_path: Path,
     ) -> None:
-        result = runner.invoke(
-            app, ["--source", "gdelt", "--output-dir", str(tmp_path)]
-        )
+        result = runner.invoke(app, ["--source", "gdelt", "--output-dir", str(tmp_path)])
         assert result.exit_code == 0, result.output
         stubbed_downloaders["gdelt"].assert_called_once()
         stubbed_downloaders["dataco"].assert_not_called()
@@ -86,9 +81,7 @@ class TestSourceSelection:
         stubbed_downloaders: dict[str, MagicMock],
         tmp_path: Path,
     ) -> None:
-        result = runner.invoke(
-            app, ["--source", "edgar", "--output-dir", str(tmp_path)]
-        )
+        result = runner.invoke(app, ["--source", "edgar", "--output-dir", str(tmp_path)])
         assert result.exit_code == 0, result.output
         stubbed_downloaders["edgar"].assert_called_once()
         stubbed_downloaders["dataco"].assert_not_called()
@@ -102,9 +95,7 @@ class TestDryRun:
         stubbed_downloaders: dict[str, MagicMock],
         tmp_path: Path,
     ) -> None:
-        result = runner.invoke(
-            app, ["--dry-run", "--output-dir", str(tmp_path)]
-        )
+        result = runner.invoke(app, ["--dry-run", "--output-dir", str(tmp_path)])
         assert result.exit_code == 0, result.output
         stubbed_downloaders["dataco"].assert_not_called()
         stubbed_downloaders["gdelt"].assert_not_called()
@@ -152,9 +143,7 @@ class TestForcePropagation:
         stubbed_downloaders: dict[str, MagicMock],
         tmp_path: Path,
     ) -> None:
-        runner.invoke(
-            app, ["--source", "kaggle", "--output-dir", str(tmp_path)]
-        )
+        runner.invoke(app, ["--source", "kaggle", "--output-dir", str(tmp_path)])
         call = stubbed_downloaders["dataco"].call_args
         assert call.kwargs["force"] is False
 
@@ -166,17 +155,15 @@ class TestGdeltWindowOverrides:
         stubbed_downloaders: dict[str, MagicMock],
         tmp_path: Path,
     ) -> None:
-        runner.invoke(
-            app, ["--source", "gdelt", "--output-dir", str(tmp_path)]
-        )
+        runner.invoke(app, ["--source", "gdelt", "--output-dir", str(tmp_path)])
         call = stubbed_downloaders["gdelt"].call_args
         start = call.kwargs["start"]
         end = call.kwargs["end"]
         assert start.tzinfo is not None
         assert end.tzinfo is not None
         # Default in module is 2024-01-15 → 2024-01-22
-        assert start == datetime(2024, 1, 15, tzinfo=timezone.utc)
-        assert end == datetime(2024, 1, 22, tzinfo=timezone.utc)
+        assert start == datetime(2024, 1, 15, tzinfo=UTC)
+        assert end == datetime(2024, 1, 22, tzinfo=UTC)
 
     def test_overridden_window_propagates_with_utc(
         self,
@@ -199,8 +186,8 @@ class TestGdeltWindowOverrides:
         )
         assert result.exit_code == 0, result.output
         call = stubbed_downloaders["gdelt"].call_args
-        assert call.kwargs["start"] == datetime(2024, 6, 1, tzinfo=timezone.utc)
-        assert call.kwargs["end"] == datetime(2024, 6, 8, tzinfo=timezone.utc)
+        assert call.kwargs["start"] == datetime(2024, 6, 1, tzinfo=UTC)
+        assert call.kwargs["end"] == datetime(2024, 6, 8, tzinfo=UTC)
 
 
 class TestOutputDirRouting:
@@ -224,6 +211,8 @@ class TestOutputDirRouting:
         new_dir = tmp_path / "deep" / "nested"
         runner.invoke(app, ["--source", "edgar", "--output-dir", str(new_dir)])
         assert new_dir.exists()
+        # Verify the fixture was wired and the EDGAR downloader was reached.
+        stubbed_downloaders["edgar"].assert_called_once()
 
 
 class TestSourceEnum:
@@ -232,7 +221,3 @@ class TestSourceEnum:
         assert Source("kaggle") is Source.KAGGLE
         assert Source("gdelt") is Source.GDELT
         assert Source("edgar") is Source.EDGAR
-
-
-def _kwargs(mock: MagicMock) -> dict[str, Any]:
-    return mock.call_args.kwargs

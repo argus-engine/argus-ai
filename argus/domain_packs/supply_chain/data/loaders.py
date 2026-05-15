@@ -17,6 +17,7 @@ downloads are renamed to that shape by ``scripts/build_fixtures.py``
 from __future__ import annotations
 
 from collections.abc import Iterator
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -47,7 +48,7 @@ def _none_if_empty(value: str | None) -> str | None:
     return stripped or None
 
 
-def _parse_optional_timestamp(value: str | None) -> object:
+def _parse_optional_timestamp(value: str | None) -> datetime | None:
     """Parse a tz-aware timestamp, or return ``None`` for empty input."""
     cleaned = _none_if_empty(value)
     if cleaned is None:
