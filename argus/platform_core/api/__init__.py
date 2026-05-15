@@ -18,3 +18,7 @@ docker-compose stack has something to point Streamlit at end-to-end.
 - OpenTelemetry instrumentation (Phase 6)
 - Auth provider gate (deferred per decision G — lands no earlier than Phase 5)
 """
+
+from argus.platform_core.api.main import app
+
+__all__ = ["app"]
