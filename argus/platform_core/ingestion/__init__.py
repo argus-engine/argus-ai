@@ -35,6 +35,10 @@ from argus.platform_core.ingestion.text import (
     TextDocumentConfig,
     TextDocumentConnector,
 )
+from argus.platform_core.ingestion.time_series import (
+    TimeSeriesConfig,
+    TimeSeriesConnector,
+)
 
 __all__ = [
     "Connector",
@@ -47,5 +51,7 @@ __all__ = [
     "StructuredCSVConnector",
     "TextDocumentConfig",
     "TextDocumentConnector",
+    "TimeSeriesConfig",
+    "TimeSeriesConnector",
     "parse_timestamp",
 ]
