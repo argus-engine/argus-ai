@@ -5,9 +5,12 @@
 
 **Multimodal, explainable, uncertainty-aware risk intelligence for high-stakes decisions.**
 
+[![CI](https://github.com/argus-ai/platform/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/argus-ai/platform/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776ab.svg?logo=python&logoColor=white)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](pyproject.toml)
-[![CI](https://img.shields.io/badge/ci-pending-lightgrey.svg)](#)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![mypy](https://img.shields.io/badge/mypy-strict-2a6db2.svg)](pyproject.toml)
+[![Coverage](https://img.shields.io/badge/coverage-report--only%20phase%201-lightgrey.svg)](#roadmap)
 [![Status](https://img.shields.io/badge/status-alpha%20%C2%B7%20phase%201-orange.svg)](#roadmap)
 
 </div>
