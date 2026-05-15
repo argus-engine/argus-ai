@@ -62,9 +62,6 @@ runs/
 wandb/
 mlruns/
 
-# Local Claude harness (do not check in)
-.claude/
-
 # Secrets — defensive belt-and-braces
 *.pem
 *.key
