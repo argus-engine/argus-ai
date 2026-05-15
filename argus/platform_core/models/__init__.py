@@ -10,9 +10,10 @@ output contract lives here.
 together with the `UncertainPrediction` schema (decision F: deferred from
 Phase 1 to land alongside the first head that needs it).
 
-**Lands in later phases:**
+**Lands in Phase 3:**
 
-- `UncertainPrediction` Pydantic schema (Phase 3)
-- Evidential regression / classification heads (Phase 3)
-- Baseline tabular models — LightGBM, XGBoost wrappers (Phase 2)
+- Baseline tabular models — LightGBM, XGBoost wrappers
+- Evidential regression / classification heads
+- `UncertainPrediction` Pydantic schema
+- Cross-modal fusion strategies hosted in `features/`
 """

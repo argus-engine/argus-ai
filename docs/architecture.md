@@ -66,9 +66,9 @@ Argus has four extension points. Each is an abstract base class or `Protocol` un
 | Extension point | Interface | What you'd swap |
 |---|---|---|
 | Ingestion source | `Connector` (`argus.platform_core.ingestion.base`) | A new file format, API, or stream |
-| LLM | `LLMProvider` (lands in Phase 3) | OpenAI → local model, vLLM, Bedrock |
 | KG backend | `KGBackend` (lands in Phase 2) | Neo4j → NetworkX, ArangoDB, Memgraph |
-| Reviewer transport | `ReviewSink` (lands in Phase 4) | Streamlit UI → Slack interactive, Linear ticket |
+| LLM | `LLMProvider` (lands in Phase 4) | OpenAI → local model, vLLM, Bedrock |
+| Reviewer transport | `ReviewSink` (lands in Phase 5) | Streamlit UI → Slack interactive, Linear ticket |
 
 Phase 1 ships only `Connector` because models, RAG, KG, and HITL surface in later phases. Stubbing interfaces ahead of
 their implementations was discussed and explicitly deferred (see decisions F and G in `memory/`-tracked Phase 1
@@ -95,7 +95,7 @@ sequenceDiagram
     Caller->>Model: predict(features, kg_context)
     Model->>RAG: retrieve_evidence(query) (optional)
     RAG-->>Model: GroundedEvidence
-    Model-->>API: UncertainPrediction (Phase 3 schema)
+    Model-->>API: UncertainPrediction (Phase 3 schema; RAG evidence per Phase 4)
     API-->>Caller: JSON response (point + band + evidence)
     opt low confidence
         API->>HITL: enqueue_for_review(prediction)
@@ -103,7 +103,7 @@ sequenceDiagram
     end
 ```
 
-Phase 1 covers steps 1–2 of this flow. Steps 3–9 land in Phases 2–4.
+Phase 1 covers steps 1–2 of this flow. Steps 3–9 land across Phases 2–5.
 
 ## Configuration
 
@@ -123,8 +123,8 @@ Environment variables override YAML, in 12-factor style. The override schema is 
 
 ## Observability
 
-(Phase 5.) Structured logging via `structlog` from day one. OpenTelemetry traces, Prometheus metrics, and a Grafana
-dashboard land with the multi-cloud rollout. Every log line carries `request_id`, `model_version`, and `pack_name`.
+(Phase 6.) Structured logging via `structlog` from day one. OpenTelemetry traces, Prometheus metrics, and a Grafana
+dashboard land with the Terraform multi-cloud rollout. Every log line carries `request_id`, `model_version`, and `pack_name`.
 
 ## Security and data governance
 

@@ -8,5 +8,5 @@ Streamlit reviewer dashboard. The HITL surface — see
 `/health` reachability lands in Task #11 alongside the docker-compose stack so
 the local network is verifiable end to end.
 
-**Phase 4 status:** full reviewer surface — queue, structured disagreement
-capture, active-learning feedback.
+**Phase 5 status:** full reviewer surface — queue, structured disagreement
+capture, active-learning feedback into Phase-3 models.

@@ -12,8 +12,9 @@ docker-compose stack has something to point Streamlit at end-to-end.
 
 **Lands in later phases:**
 
-- `/predict` and `/explain` routes (Phase 3)
-- HITL review endpoints (Phase 4)
-- OpenTelemetry instrumentation (Phase 5)
-- Auth provider gate (deferred per decision G — auth lives outside Phase 1)
+- `/predict` route (Phase 3, exposing `UncertainPrediction`)
+- `/explain` route (Phase 4, attaching RAG-grounded evidence)
+- HITL review endpoints (Phase 5)
+- OpenTelemetry instrumentation (Phase 6)
+- Auth provider gate (deferred per decision G — lands no earlier than Phase 5)
 """

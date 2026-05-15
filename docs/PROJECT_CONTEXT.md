@@ -29,14 +29,16 @@ Portfolio repo for senior ML/AI roles — headline target is the KTP Associate r
 
 | Phase | Scope | Status |
 |---|---|---|
-| **1. Foundations** | Repo skeleton, packaging, CI, ingestion ABCs, supply-chain schemas, Docker, docs | **in progress** — Task #10 (CI) next |
-| **2. Knowledge layer** | Neo4j construction from supply-chain pack, KG queries, NetworkX fallback, first baseline model (LightGBM) | not started |
-| **3. Modeling & RAG** | Evidential uncertainty heads, multi-modal fusion, RAG with grounding rubric, fabrication check | not started |
-| **4. Human in the loop** | Streamlit reviewer dashboard, structured disagreement capture, active-learning feedback into Phase 3 models | not started |
-| **5. Multi-cloud + observability** | Terraform GCP + AWS, multi-arch image push, OpenTelemetry traces, evaluation harness | not started |
-| **6. Release & community** | Tag 1.0, contribution onboarding, docs site, security review, examples gallery | not started |
+| **1. Scaffold + ingestion + docs + CI** | Repo skeleton, packaging, ingestion ABCs + connectors, supply-chain schemas + loaders, source downloaders, CI, Docker, docs | **in progress** — Task #10 (CI) next |
+| **2. Knowledge graph engine** | Neo4j construction from supply-chain entities, cascading-risk queries, NetworkX fallback, `KGBackend` Protocol | not started |
+| **3. Predictive head with evidential uncertainty** | Baseline tabular models (LightGBM, XGBoost), evidential regression / classification heads, cross-modal fusion, `UncertainPrediction` schema | not started |
+| **4. RAG + grounding rubric + fabrication check** | `LLMProvider` (OpenAI + local), retriever over KG + vector store, grounding rubric, fabrication check, pack-specific prompt assets | not started |
+| **5. HITL dashboard + active learning loop** | Streamlit reviewer dashboard, `ReviewSink` Protocol, disagreement schema, active-learning feedback into Phase-3 models, evaluation harness (calibration / coverage / grounding fidelity) | not started |
+| **6. Terraform multi-cloud deployment** | Terraform modules for GCP + AWS, multi-arch image push, K8s manifests, OpenTelemetry traces, Prometheus + Grafana | not started |
 
 Each phase ends with a tagged release, refreshed `docs/architecture.md`, and runnable acceptance criteria.
+
+**No Phase 7.** Polish items that are recruiter-visible (README, quickstart, badges, working demos, examples) live in Task #14 of Phase 1, not a separate phase — this is a portfolio project under a 14-day Phase-1 deadline and scope must stay disciplined.
 
 ## Where we are now
 
@@ -70,7 +72,7 @@ Phase-1 task ledger (matches the TaskList in-session):
 | GPU target | NVIDIA CUDA 12.x | User has the hardware; gpu Docker variant + compose profile |
 | Phase 1 deadline | **2026-05-29** | KTP application target |
 | Schemas approved | `Decimal` money, six-value `OrderStatus`, opaque `entities_mentioned: list[str]`, `raw` on all four entities | Red-lined explicitly during Task #8 — see commit `c6db7bb` |
-| Deferred from Phase 1 | `UncertainPrediction` schema (→ Phase 3), `AuthProvider` stub (→ Phase 4+), Terraform resources (→ Phase 5), `LLMProvider` (→ Phase 3), KG queries, models | Right scope for two-week deadline |
+| Deferred from Phase 1 | `UncertainPrediction` schema (→ Phase 3), `AuthProvider` stub (→ Phase 5+), Terraform resources (→ Phase 6), `LLMProvider` (→ Phase 4), KG queries (→ Phase 2), models (→ Phase 3) | Right scope for two-week deadline |
 
 Full decisions ledger in `memory/project_phase1_decisions.md`.
 
@@ -93,7 +95,7 @@ Full decisions ledger in `memory/project_phase1_decisions.md`.
 | GDELT scope **bounded**: 1-week window × four supply-chain themes | Full GKG is terabytes; bounded subset documented in `docs/data_sources.md` |
 | EDGAR sample **bounded**: 6 fixed CIKs × (1 × 10-K + 3 × 8-K) | ~24 documents; small, refreshable, representative |
 | Configs in YAML, never hardcoded | `pydantic-settings` reads them; decision E |
-| Three-tier resolution pattern (explicit → env → default) | Reused for User-Agent; will be reused for LLMProvider in Phase 3 |
+| Three-tier resolution pattern (explicit → env → default) | Reused for User-Agent; will be reused for LLMProvider in Phase 4 |
 
 ## Working conventions
 

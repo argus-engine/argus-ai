@@ -4,10 +4,10 @@
 Multi-cloud infrastructure-as-code for the Argus platform.
 
 **Phase 1 status:** stub. No Terraform resources are declared yet — that
-work lands in Phase 5 ("Multi-cloud + observability") together with image
-push, OpenTelemetry wiring, and a hosted evaluation harness.
+work lands in Phase 6 ("Terraform multi-cloud deployment") together with image
+push, K8s manifests, and OpenTelemetry / Prometheus / Grafana wiring.
 
-## Intended layout (Phase 5)
+## Intended layout (Phase 6)
 
 ```
 terraform/

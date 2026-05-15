@@ -9,10 +9,12 @@ training signal.
 
 **Phase 1 surface:** empty.
 
-**Lands in later phases:**
+**Lands in Phase 5:**
 
 - `ReviewSink` Protocol so the reviewer transport (Streamlit / Slack / Linear)
-  is pluggable (Phase 4)
-- Disagreement schema and active-learning feedback loop (Phase 4)
-- Reviewer dashboard wiring (Phase 4)
+  is pluggable
+- Disagreement schema and active-learning feedback loop into Phase-3 models
+- Streamlit reviewer dashboard wiring
+- Evaluation harness (calibration, coverage, grounding fidelity, subgroup
+  performance)
 """

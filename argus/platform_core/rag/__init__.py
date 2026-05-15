@@ -12,9 +12,10 @@ caller code.
 
 **Phase 1 surface:** empty.
 
-**Lands in later phases:**
+**Lands in Phase 4:**
 
-- `LLMProvider` Protocol + `OpenAIProvider` implementation (Phase 3)
-- `Retriever` over the KG and a vector store (Phase 3)
-- Grounding rubric + fabrication check (Phase 3)
+- `LLMProvider` Protocol + `OpenAIProvider` implementation
+- `Retriever` over the KG and a vector store
+- Grounding rubric + fabrication check
+- Pack-specific prompt assets loaded from each pack's ``prompts/`` directory
 """

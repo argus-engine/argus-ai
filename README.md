@@ -143,11 +143,12 @@ These are guardrails, not aspirations. Every PR is reviewed against them.
 
 | Phase | Scope | Status |
 |---|---|---|
-| **1. Foundations** | Repo skeleton, packaging, CI, ingestion ABCs, supply-chain schemas, Docker, docs | **in progress** |
-| **2. Knowledge layer** | Neo4j construction from supply-chain pack, KG queries, NetworkX fallback, first baseline model (LightGBM) | next |
-| **3. Modeling & RAG** | Evidential uncertainty heads, multi-modal fusion, RAG with grounding rubric, fabrication check | |
-| **4. Human in the loop** | Streamlit reviewer dashboard, structured disagreement capture, active-learning feedback into Phase 3 models | |
-| **5. Multi-cloud + observability** | Terraform for GCP + AWS, multi-arch image push, OpenTelemetry traces, evaluation harness | |
+| **1. Scaffold + ingestion + docs + CI** | Repo skeleton, packaging, ingestion ABCs + connectors, supply-chain schemas + loaders, source downloaders, CI, Docker, docs | **in progress** |
+| **2. Knowledge graph engine** | Neo4j construction from supply-chain entities, cascading-risk queries, NetworkX fallback, `KGBackend` Protocol | next |
+| **3. Predictive head with evidential uncertainty** | Baseline tabular models (LightGBM, XGBoost), evidential heads, cross-modal fusion, `UncertainPrediction` schema | |
+| **4. RAG + grounding rubric + fabrication check** | `LLMProvider` (OpenAI + local), retriever over KG + vector store, grounding rubric, fabrication check | |
+| **5. HITL dashboard + active learning loop** | Streamlit reviewer dashboard, `ReviewSink` Protocol, disagreement schema, active-learning feedback into Phase-3 models, evaluation harness | |
+| **6. Terraform multi-cloud deployment** | Terraform for GCP + AWS, multi-arch image push, K8s manifests, OpenTelemetry traces, Prometheus + Grafana | |
 
 Each phase ends with a tagged release, a refreshed `docs/architecture.md`, and runnable acceptance criteria.
 
@@ -161,7 +162,7 @@ argus/                          # Python package (decision A: import name = argu
 │   ├── ingestion/              # Connector ABC + structured/text/time-series connectors
 │   ├── features/               # cross-modal encoders and fusion layers
 │   ├── kg/                     # knowledge-graph construction + queries
-│   ├── models/                 # predictive heads (uncertainty lands in Phase 3)
+│   ├── models/                 # predictive heads with evidential uncertainty (Phase 3)
 │   ├── rag/                    # retrieval, grounding rubric, fabrication check
 │   ├── hitl/                   # review queue and active-learning feedback
 │   └── api/                    # FastAPI service layer

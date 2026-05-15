@@ -6,6 +6,7 @@ subgroup performance as committed in `docs/responsible_ai.md`. A model card
 (`MODEL_CARD.md`) is published alongside every released model and documents
 the training distribution, known performance gaps, and fairness metrics.
 
-**Phase 1 surface:** empty. The harness and model card land in Phase 4 with the
-first reviewable model.
+**Phase 1 surface:** empty. The harness and model card land in Phase 5 with the
+HITL dashboard and active-learning loop, which is also when feedback labels
+start arriving to support calibration re-checks.
 """

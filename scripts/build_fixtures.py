@@ -14,7 +14,7 @@ byte-identical output. CI does not invoke this script.
 
 Phase 1 scope: DataCo CSVs only. Conversion of GDELT GKG rows to the
 ``EventSignal`` shape and of EDGAR filings to ``Supplier``-shaped rows
-lands in Phase 2 alongside the consumers that need them.
+lands in Phase 2 (KG construction) alongside the consumers that need them.
 """
 
 from __future__ import annotations

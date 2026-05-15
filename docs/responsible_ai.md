@@ -39,9 +39,9 @@ We are deliberate about what Argus does *not* yet do well.
 
 | Limitation | Practical impact | Mitigation |
 |---|---|---|
-| **Calibration drift** | Uncertainty estimates are calibrated on training data; real-world drift degrades them. | Phase 4 ships an evaluation harness that re-checks calibration on incoming feedback labels. |
+| **Calibration drift** | Uncertainty estimates are calibrated on training data; real-world drift degrades them. | Phase 5 ships an evaluation harness that re-checks calibration on incoming feedback labels. |
 | **Long-tail event coverage** | Models trained on historical data underestimate rare regimes (e.g. pandemic-scale shocks). | Surface KG-derived event signals separately so analysts see the qualitative shift even when the model's probability is low. |
-| **Citation faithfulness** | RAG retrieval finds relevant evidence but does not guarantee the model's *claim* is supported by it. | Phase 3 ships a grounding rubric that checks claim ↔ evidence alignment and flags unsupported assertions. |
+| **Citation faithfulness** | RAG retrieval finds relevant evidence but does not guarantee the model's *claim* is supported by it. | Phase 4 ships a grounding rubric that checks claim ↔ evidence alignment and flags unsupported assertions. |
 | **Language coverage** | Text encoders are strongest in English; performance degrades in low-resource languages. | Document the language coverage of each prompt/model asset; default to flagging low-confidence translations for review. |
 | **Geographic and sector skew** | Public datasets (DataCo, GDELT, EDGAR) over-represent North American and Western European actors. | The supply-chain pack documents its training distribution; users should expect degraded performance outside it. |
 
@@ -52,7 +52,7 @@ fewer orders, which produces fewer data points, which deepens the under-predicti
 
 Argus's response is structural, not just statistical:
 
-- **Counterfactual surfacing.** When uncertainty is high, the HITL surface (Phase 4) presents the closest counterfactual
+- **Counterfactual surfacing.** When uncertainty is high, the HITL surface (Phase 5) presents the closest counterfactual
   the model considered, so the reviewer sees what *would* have changed the prediction.
 - **Disagreement capture.** Reviewer disagreements with the model are stored alongside predictions, not just used as
   retraining labels — so we can audit whether the model is systematically wrong about a sub-population.
@@ -76,13 +76,13 @@ Argus's response is structural, not just statistical:
 
 ## Evaluation expectations
 
-The platform refuses to be evaluated only on point-prediction accuracy. The evaluation harness (lands in Phase 4)
+The platform refuses to be evaluated only on point-prediction accuracy. The evaluation harness (lands in Phase 5)
 reports, at minimum:
 
 - Point-prediction accuracy with confidence intervals.
 - **Calibration**: reliability diagrams and expected-calibration-error.
 - **Coverage**: fraction of held-out events that fall within the model's stated confidence band.
-- **Grounding fidelity**: fraction of RAG citations actually supporting the claim they were attached to (Phase 3+).
+- **Grounding fidelity**: fraction of RAG citations actually supporting the claim they were attached to (Phase 4+).
 - **Subgroup performance** across the dimensions documented in each pack's model card.
 
 A model that wins on accuracy but loses on calibration or coverage is not shipped.

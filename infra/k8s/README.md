@@ -3,11 +3,11 @@
 
 Kubernetes manifests for the Argus platform.
 
-**Phase 1 status:** stub. Manifests land in Phase 5 together with the Terraform
+**Phase 1 status:** stub. Manifests land in Phase 6 together with the Terraform
 modules that provision the clusters they run on. Local development uses the
 `docker-compose.yml` at the repo root, not k8s.
 
-Intended layout (Phase 5):
+Intended layout (Phase 6):
 
 ```
 k8s/
