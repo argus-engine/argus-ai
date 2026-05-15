@@ -1,0 +1,70 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distributions / build
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+.installed.cfg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache/
+coverage.xml
+*.cover
+
+# ---- IDE / editor ----
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Project ----
+# Real datasets are downloaded by scripts/download_data.py; only fixtures are committed.
+data/
+!tests/fixtures/
+
+# Local environment overrides
+.env
+.env.*
+!.env.example
+
+# Logs and artifacts
+logs/
+*.log
+artifacts/
+runs/
+wandb/
+mlruns/
+
+# Local Claude harness (do not check in)
+.claude/
+
+# Secrets — defensive belt-and-braces
+*.pem
+*.key
+credentials.json
+kaggle.json

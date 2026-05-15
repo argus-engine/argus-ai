@@ -1,0 +1,290 @@
+# SPDX-License-Identifier: Apache-2.0
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+# -------------------------------------------------------------------
+# Project metadata
+# -------------------------------------------------------------------
+[project]
+name = "argus-risk"
+dynamic = ["version"]
+description = "Argus — multimodal, explainable, uncertainty-aware risk intelligence platform."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11,<3.13"
+authors = [
+    { name = "The Argus Authors" },
+]
+keywords = [
+    "risk-modeling",
+    "supply-chain",
+    "multimodal-ml",
+    "uncertainty-quantification",
+    "knowledge-graph",
+    "retrieval-augmented-generation",
+    "explainable-ai",
+    "human-in-the-loop",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+
+# Core runtime dependencies — every install needs these.
+# Library-style lower bounds; exact pins live in a separate lock file
+# (added in a later phase if reproducibility demands it).
+dependencies = [
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.3,<3",
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "httpx>=0.27,<1",
+    "pyyaml>=6.0",
+    "structlog>=24.4",
+    "typer>=0.12,<1",
+    "rich>=13.7",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "tenacity>=8.5",
+]
+
+# -------------------------------------------------------------------
+# Optional dependency groups
+#
+# Architectural decision (B): domain packs are installable extras.
+#   pip install argus-risk[supply-chain]
+# Architectural decision (A): import name is `argus`, distribution name
+# is `argus-risk` — this avoids the taken `argus` namespace on PyPI.
+# -------------------------------------------------------------------
+[project.optional-dependencies]
+ml = [
+    "torch>=2.3,<3",
+    "transformers>=4.44,<5",
+    "sentence-transformers>=3.0,<4",
+    "scikit-learn>=1.5",
+    "xgboost>=2.1",
+    "lightgbm>=4.5",
+]
+kg = [
+    "neo4j>=5.23,<6",
+    "networkx>=3.3",
+]
+rag = [
+    "openai>=1.40,<2",
+    "tiktoken>=0.7",
+]
+streamlit = [
+    "streamlit>=1.37",
+]
+supply-chain = [
+    "kaggle>=1.6",
+    "sec-edgar-downloader>=5.0",
+    "requests>=2.32",
+]
+all = [
+    "argus-risk[ml,kg,rag,streamlit,supply-chain]",
+]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
+    "pytest-mock>=3.14",
+    "pytest-httpx>=0.30",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "bandit[toml]>=1.7",
+    "pip-audit>=2.7",
+    "pre-commit>=3.7",
+    "types-pyyaml",
+    "types-requests",
+]
+
+[project.urls]
+Homepage = "https://github.com/argus-ai/platform"
+Repository = "https://github.com/argus-ai/platform"
+Documentation = "https://github.com/argus-ai/platform/blob/main/docs/architecture.md"
+Issues = "https://github.com/argus-ai/platform/issues"
+
+[project.scripts]
+argus = "argus.cli:app"
+
+# -------------------------------------------------------------------
+# Hatch build / version configuration
+# -------------------------------------------------------------------
+[tool.hatch.version]
+path = "argus/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["argus"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/argus",
+    "/tests",
+    "/configs",
+    "/docs",
+    "/scripts",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
+
+# -------------------------------------------------------------------
+# Ruff — lint + format
+# -------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    ".venv",
+    "build",
+    "dist",
+    "data",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".pytest_cache",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+    "ANN",  # flake8-annotations
+    "PL",   # pylint subset
+    "PT",   # flake8-pytest-style
+    "TID",  # flake8-tidy-imports
+    "ARG",  # unused arguments
+    "PTH",  # flake8-use-pathlib
+]
+ignore = [
+    "ANN401",   # Allow Any in some signatures (typed Protocol-style code)
+    "PLR0913",  # Allow >5 args — common in data pipelines
+    "PLR2004",  # Allow magic numbers in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ANN",      # Tests don't need return annotations
+    "PLR2004",  # Magic numbers fine in tests
+    "S101",     # asserts are the point
+]
+"scripts/**/*.py" = [
+    "ANN",      # Scripts are not library code
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["argus"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# -------------------------------------------------------------------
+# Mypy — strict typing
+# -------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+show_error_codes = true
+pretty = true
+files = ["argus", "tests"]
+
+# External libraries without stubs — silence the missing-imports complaint
+# rather than littering source files with `# type: ignore`.
+[[tool.mypy.overrides]]
+module = [
+    "kaggle.*",
+    "sec_edgar_downloader.*",
+    "neo4j.*",
+    "networkx.*",
+    "xgboost.*",
+    "lightgbm.*",
+    "sklearn.*",
+    "sentence_transformers.*",
+    "transformers.*",
+    "torch.*",
+    "streamlit.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+# -------------------------------------------------------------------
+# Pytest
+# -------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+]
+markers = [
+    "slow: tests that take more than a couple seconds",
+    "integration: tests that touch external systems",
+    "gpu: tests that require a CUDA device",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:pkg_resources.*",
+]
+
+# -------------------------------------------------------------------
+# Coverage
+# -------------------------------------------------------------------
+[tool.coverage.run]
+source = ["argus"]
+branch = true
+omit = [
+    "argus/cli.py",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+precision = 1
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+# -------------------------------------------------------------------
+# Bandit — security scan
+# -------------------------------------------------------------------
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "build", "dist"]
+skips = ["B101"]  # asserts are fine in our codebase
