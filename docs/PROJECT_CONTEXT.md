@@ -29,8 +29,8 @@ Portfolio repo for senior ML/AI roles — headline target is the KTP Associate r
 
 | Phase | Scope | Status |
 |---|---|---|
-| **1. Scaffold + ingestion + docs + CI** | Repo skeleton, packaging, ingestion ABCs + connectors, supply-chain schemas + loaders, source downloaders, CI, Docker, docs | **in progress** — Task #10 (CI) next |
-| **2. Knowledge graph engine** | Neo4j construction from supply-chain entities, cascading-risk queries, NetworkX fallback, `KGBackend` Protocol | not started |
+| **1. Scaffold + ingestion + docs + CI** | Repo skeleton, packaging, ingestion ABCs + connectors, supply-chain schemas + loaders, source downloaders, CI, Docker, docs | ✅ **complete** — `v0.1.0` |
+| **2. Knowledge graph engine** | Neo4j construction from supply-chain entities, cascading-risk queries, NetworkX fallback, `KGBackend` Protocol | ⏭ **next** |
 | **3. Predictive head with evidential uncertainty** | Baseline tabular models (LightGBM, XGBoost), evidential regression / classification heads, cross-modal fusion, `UncertainPrediction` schema | not started |
 | **4. RAG + grounding rubric + fabrication check** | `LLMProvider` (OpenAI + local), retriever over KG + vector store, grounding rubric, fabrication check, pack-specific prompt assets | not started |
 | **5. HITL dashboard + active learning loop** | Streamlit reviewer dashboard, `ReviewSink` Protocol, disagreement schema, active-learning feedback into Phase-3 models, evaluation harness (calibration / coverage / grounding fidelity) | not started |
@@ -42,9 +42,9 @@ Each phase ends with a tagged release, refreshed `docs/architecture.md`, and run
 
 ## Where we are now
 
-**Phase 1, ~73% through.** Tasks #1–#9 done, #10–#12 pending.
+**Phase 1 complete (tagged `v0.1.0`).** Phase 2 (knowledge graph engine) is next.
 
-Phase-1 task ledger (matches the TaskList in-session):
+Phase-1 task ledger (all complete):
 
 1. ✅ Packaging foundation (pyproject.toml, LICENSE, .gitignore, .python-version)
 2. ✅ README with pitch + mermaid diagram + quickstart
@@ -55,11 +55,33 @@ Phase-1 task ledger (matches the TaskList in-session):
 7. ✅ Three concrete connectors: `StructuredCSVConnector`, `TextDocumentConnector`, `TimeSeriesConnector`
 8. ✅ Supply-chain schemas (`Order`/`Supplier`/`Shipment`/`EventSignal`) + loaders + tests *(draft-PR red-line process)*
 9. ✅ `scripts/download_data.py` + `scripts/build_fixtures.py` *(DataCo, bounded GDELT, EDGAR sample)*
-10. ⬜ GitHub Actions CI **← next**
-11. ⬜ Dockerfile (multi-stage, CPU + CUDA 12.x `gpu` target) + `docker-compose.yml`
-12. ⬜ Polish + quickstart verification
+10. ✅ GitHub Actions CI (lint / typecheck / test matrix / security / docker-build)
+11. ✅ Multi-stage Dockerfile (cpu / gpu / streamlit) + `docker-compose.yml` with `--profile gpu`
+12. ✅ Polish: README badges, terraform stubs, `argus --help` subcommand structure, clean-clone quickstart verification, `v0.1.0` tag
 
-**State as of the last commit:** 22 commits on `main`, **223 tests passing in 3.82s**, zero live-API calls in CI.
+**State at the close of Phase 1:** **`v0.1.0` tag**, ≈33 commits on `main`, **233 tests passing in ≈4s**, zero live-API calls in CI, clean-clone install verified end-to-end (uvicorn → `/health` round-trip).
+
+## Phase 2 entry points
+
+When the next session opens, start here:
+
+| Where | Why |
+|---|---|
+| `docs/PROJECT_CONTEXT.md` (this file) | The fast-onboarding read |
+| `argus/platform_core/kg/__init__.py` | Phase-2 scope: `KGBackend` Protocol, Neo4j and NetworkX backends, schema definitions, cascading-risk queries, subgraph extraction |
+| `docs/architecture.md` | Layering contract + the `KGBackend` extension point row |
+| `argus/domain_packs/supply_chain/data/schemas.py` | The four entity shapes (`Order`, `Supplier`, `Shipment`, `EventSignal`) that the KG construction will project to nodes + relations |
+| `docker-compose.yml` | The `neo4j` service is already up with APOC pre-installed and procedures unrestricted — nothing to change here for Phase 2 |
+| `infra/terraform/data.tf` | Phase-6 managed-Neo4j scope; useful as a reference for what we're prototyping locally in Phase 2 |
+
+**Phase 2 acceptance criteria (proposed, refine when the phase opens):**
+
+- `KGBackend` Protocol in `argus.platform_core.kg.base` with `Neo4jBackend` and `NetworkXBackend` implementations behind it
+- Projection from `Order` / `Supplier` / `Shipment` / `EventSignal` to typed graph nodes + relations
+- At least one **cascading-risk query** — given a supplier-failure event, return the ordered list of downstream orders and customers at risk
+- Tests against both backends (NetworkX in unit tests, Neo4j via the docker-compose service in integration tests tagged `@pytest.mark.integration`)
+- Coverage gate flips from "report-only" to "enforced" (per the standing rule that Phase 2 gates coverage)
+- Updated `docs/architecture.md` + `docs/PROJECT_CONTEXT.md` at phase close, `v0.2.0` tag
 
 ## Locked-in decisions
 
@@ -146,6 +168,35 @@ Persistent memory lives at `~/.claude/projects/<this-project>/memory/`:
 | `feedback_no_attribution.md` | feedback | **Standing rule** — no Claude / Anthropic / AI attribution anywhere |
 
 When the conversation resumes in a future session, the assistant reads `MEMORY.md` plus this document, and is on its feet in under a minute.
+
+## Phase 1 closeout
+
+**Tag:** `v0.1.0` (annotated). **Test suite:** 233 passing, ~4s, zero live-API calls.
+
+| Category | Delivered |
+|---|---|
+| Packaging | hatchling, prod + 5 optional extras (`ml`, `kg`, `rag`, `streamlit`, `supply-chain`, `all`), `dev` extra, ruff + mypy strict + pytest + coverage + bandit configured in `pyproject.toml` |
+| Docs (recruiter surface) | `README.md` (pitch + mermaid + quickstart + roadmap), `CONTRIBUTING.md`, `docs/architecture.md`, `docs/responsible_ai.md`, `docs/data_sources.md`, `docs/PROJECT_CONTEXT.md` (this file) |
+| Pre-commit | ruff, mypy (project venv), conventional-pre-commit (commit-msg), SPDX header checker, whitespace / EOF / large-file / private-key sanity |
+| Ingestion | `Connector` ABC + `RawRecord` / `RecordBatch` / `RecordStream` / `ConnectorConfig`, three concrete connectors (`StructuredCSVConnector`, `TextDocumentConnector`, `TimeSeriesConnector`), full test coverage |
+| Supply-chain pack | `Order` / `Supplier` / `Shipment` / `EventSignal` schemas (red-lined and approved), loaders, hand-crafted fixtures, source downloaders with resumable-download contracts and bounded-scope GDELT / EDGAR subsets |
+| CI | GitHub Actions: lint / typecheck / test (Py 3.11 + 3.12 matrix) / security (bandit gates, pip-audit advisory) / docker-build (multi-arch, auto-skip-until-Dockerfile) |
+| Docker | Multi-stage Dockerfile with `cpu`, `gpu` (nvidia/cuda 12.4.1), and `streamlit` targets, non-root argus user (UID 1000), HEALTHCHECK on `/health`, comprehensive `.dockerignore` |
+| Compose | `api` (cpu) / `api-gpu` (gpu) / `neo4j` (5.20 + APOC pre-installed) / `streamlit` services on a named network, `--profile gpu` swap, committed `.env` activates cpu by default |
+| API | FastAPI `/health` placeholder with typed `HealthResponse`, OpenAPI docs at `/docs` |
+| Frontend | Streamlit placeholder that probes `/health` and renders the response |
+| CLI | `argus version` + `argus serve` subcommands, both surfacing in `argus --help` |
+| Infra stubs | `infra/terraform/` with real `versions.tf` + `variables.tf` + `terraform.tfvars.example` plus documented Phase-6 stubs for `main.tf` / `network.tf` / `compute.tf` / `data.tf` / `iam.tf` / `outputs.tf` |
+| Author identity | Every commit authored + committed by **Soheil Jafarifard Bidgoli `<soheiljafarifard@gmail.com>`**; zero Claude / Anthropic / AI attribution anywhere in tree or history |
+
+**Deferred to later phases (intentional, on-record):**
+- `UncertainPrediction` schema → Phase 3
+- `LLMProvider` Protocol and prompt assets → Phase 4
+- `AuthProvider` and HITL surfaces → Phase 5
+- Coverage gating (currently report-only) → flips on at Phase 2 open
+- pip-audit gating (currently advisory) → Phase 6
+- Image digest pins (currently `MAJOR.MINOR.PATCH` tags) → Phase 6
+- Terraform resource declarations → Phase 6
 
 ## Phase-closeout checklist
 
