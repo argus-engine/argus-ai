@@ -2,17 +2,36 @@
 """Ingestion: external sources → normalized `RawRecord` stream.
 
 This is the lowest layer of `platform_core`. Every connector implements the
-`Connector` ABC (`base.py`) and yields an `Iterator[RawRecord]` annotated with
-modality (`structured`, `text`, `time_series`) and a `source` provenance tag.
+`Connector` ABC (`base.py`) and yields a `RecordStream` of records annotated
+with modality (`structured`, `text`, `time_series`) and a `source` provenance
+tag.
 
 **Phase 1 surface (this phase):**
 
 - `Connector` ABC with batching helper
-- `RawRecord`, `RecordBatch`, `ConnectorConfig` Pydantic schemas
+- `RawRecord`, `RecordBatch`, `RecordStream`, `ConnectorConfig`, `Modality`
 - Concrete connectors: `StructuredCSVConnector`, `TextDocumentConnector`,
-  `TimeSeriesConnector`
+  `TimeSeriesConnector` (Task #7)
 
-**Out of scope this phase:** streaming connectors (Kafka, Kinesis), online-learning
-sources, and PII-redacting wrappers — those land in later phases. The interface
-shape here is designed to accommodate them without breaking changes.
+**Out of scope this phase:** streaming connectors (Kafka, Kinesis), online-
+learning sources, and PII-redacting wrappers — those land in later phases. The
+interface shape here is designed to accommodate them without breaking changes.
 """
+
+from argus.platform_core.ingestion.base import (
+    Connector,
+    ConnectorConfig,
+    Modality,
+    RawRecord,
+    RecordBatch,
+    RecordStream,
+)
+
+__all__ = [
+    "Connector",
+    "ConnectorConfig",
+    "Modality",
+    "RawRecord",
+    "RecordBatch",
+    "RecordStream",
+]
