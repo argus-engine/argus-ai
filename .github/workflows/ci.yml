@@ -139,24 +139,29 @@ jobs:
         run: pip-audit --strict
 
   docker-build:
-    name: Docker build (multi-arch, no push)
+    name: Docker build (cpu target, multi-arch, no push)
     runs-on: ubuntu-latest
-    # Auto-skip while no Dockerfile exists (Task #11 lands it). The job
-    # activates automatically the moment infra/docker/Dockerfile is on
-    # the branch, and branch-protection rules can still require it from
-    # day one — GitHub treats a skipped required check as passing.
+    # Auto-skip while no Dockerfile exists. GitHub treats a skipped
+    # required check as passing, so branch protection can require this
+    # job from day one and it activates the moment the Dockerfile is
+    # on the branch.
     if: ${{ hashFiles('infra/docker/Dockerfile') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
-      - name: Build multi-arch image (no push)
+      - name: Build cpu target (multi-arch, no push)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: infra/docker/Dockerfile
+          target: cpu
           platforms: linux/amd64,linux/arm64
           push: false
           tags: argus:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        # gpu and streamlit targets are validated locally and via the
+        # Phase-6 image-push workflow; building all three multi-arch
+        # in every PR is gratuitous CI minutes given the dep-install
+        # cache hit-rate.

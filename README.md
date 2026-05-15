@@ -110,8 +110,14 @@ pip install -e ".[dev,supply-chain]"
 argus version
 pytest
 
-# 4. Local stack — FastAPI + Neo4j + Streamlit reviewer (placeholders in Phase 1)
-docker compose up
+# 4. Local stack — FastAPI + Neo4j (with APOC) + Streamlit placeholder
+docker compose up                       # cpu profile, set by the committed `.env`
+docker compose --profile gpu up         # nvidia/cuda runtime variant
+
+# Once the stack is healthy:
+#   FastAPI:   http://localhost:8000/health  (and /docs for the OpenAPI UI)
+#   Streamlit: http://localhost:8501          (reads from the api via /health)
+#   Neo4j:     http://localhost:7474          (no auth — dev only)
 ```
 
 To fetch the supply-chain reference datasets (DataCo via Kaggle, GDELT subset, SEC EDGAR sample):
