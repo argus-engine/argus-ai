@@ -49,8 +49,10 @@ Thumbs.db
 /data/
 !tests/fixtures/
 
-# Local environment overrides
-.env
+# Local environment overrides.
+# The project-root `.env` IS committed — it sets the default
+# docker-compose profile (`COMPOSE_PROFILES=cpu`). Real secrets must live
+# in `.env.local`, which is gitignored below.
 .env.*
 !.env.example
 

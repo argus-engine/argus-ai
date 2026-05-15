@@ -1,0 +1,169 @@
+# SPDX-License-Identifier: Apache-2.0
+# ---------------------------------------------------------------------------
+# Local development stack for Argus.
+#
+# Quickstart:    docker compose up
+# GPU variant:   docker compose --profile gpu up
+#
+# The default `cpu` profile is enabled by the committed `.env` file at the
+# repo root (COMPOSE_PROFILES=cpu). Passing `--profile gpu` swaps the
+# `api` service for `api-gpu`, which builds the CUDA-based Dockerfile
+# target and requests an NVIDIA device reservation.
+#
+# Both `api` and `api-gpu` advertise the network alias `api` so the
+# streamlit container can reach whichever one is active at
+# `http://api:8000` — the two services never run concurrently because
+# their profiles are mutually exclusive.
+# ---------------------------------------------------------------------------
+
+name: argus
+
+services:
+  api:
+    profiles: ["cpu"]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+      target: cpu
+    image: argus-api:cpu
+    container_name: argus-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      ARGUS_LOG_LEVEL: INFO
+      ARGUS_KG_BACKEND: neo4j
+      ARGUS_NEO4J_URI: bolt://neo4j:7687
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    networks:
+      argus:
+        aliases:
+          - api
+
+  api-gpu:
+    profiles: ["gpu"]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+      target: gpu
+    image: argus-api:gpu
+    container_name: argus-api-gpu
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      ARGUS_LOG_LEVEL: INFO
+      ARGUS_KG_BACKEND: neo4j
+      ARGUS_NEO4J_URI: bolt://neo4j:7687
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    networks:
+      argus:
+        aliases:
+          - api
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: ["gpu"]
+
+  neo4j:
+    image: neo4j:5.20.0-community
+    container_name: argus-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"  # HTTP browser UI
+      - "7687:7687"  # Bolt protocol
+    environment:
+      # Local dev only — production deployments must enable auth.
+      NEO4J_AUTH: "none"
+      # APOC plugin is pre-installed for the cascading-risk queries that
+      # the Phase 2 KG construction will rely on.
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_apoc_export_file_enabled: "true"
+      NEO4J_apoc_import_file_enabled: "true"
+      NEO4J_apoc_import_file_use__neo4j__config: "true"
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*"
+      NEO4J_dbms_security_procedures_allowlist: "apoc.*"
+      # Conservative defaults for laptop dev — Phase 6 production sizing
+      # is set in the Terraform module.
+      NEO4J_dbms_memory_heap_initial__size: "512m"
+      NEO4J_dbms_memory_heap_max__size: "1g"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-plugins:/plugins
+    healthcheck:
+      # The base image ships wget but not curl; per Neo4j's own docs the
+      # canonical readiness probe is the HTTP browser endpoint on 7474.
+      test:
+        ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      argus:
+        aliases:
+          - neo4j
+
+  streamlit:
+    profiles: ["cpu", "gpu"]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+      target: streamlit
+    image: argus-streamlit:dev
+    container_name: argus-streamlit
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      ARGUS_API_URL: "http://api:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "--fail",
+          "--silent",
+          "http://localhost:8501/_stcore/health",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    networks:
+      argus:
+        aliases:
+          - streamlit
+
+networks:
+  argus:
+    name: argus-network
+    driver: bridge
+
+volumes:
+  neo4j-data:
+    name: argus-neo4j-data
+  neo4j-logs:
+    name: argus-neo4j-logs
+  neo4j-plugins:
+    name: argus-neo4j-plugins
