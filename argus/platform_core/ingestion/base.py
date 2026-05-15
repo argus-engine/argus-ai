@@ -47,6 +47,28 @@ class Modality(str, Enum):
     TIME_SERIES = "time_series"
 
 
+def parse_timestamp(raw: str, fmt: str | None = None) -> datetime:
+    """Parse a timestamp string into a timezone-aware :class:`datetime`.
+
+    The canonical parser for the ingestion layer — every connector that
+    extracts a timestamp from string input goes through this function so the
+    naive-datetime handling stays consistent across modalities.
+
+    Args:
+        raw: The raw string to parse.
+        fmt: An optional :func:`datetime.strptime` format. When ``None``
+            (the default), :meth:`datetime.fromisoformat` is used.
+
+    Returns:
+        A timezone-aware datetime. If the parsed value is naive, UTC is
+        attached — never silently dropped on the floor.
+    """
+    ts = datetime.strptime(raw, fmt) if fmt else datetime.fromisoformat(raw)
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts
+
+
 class RawRecord(BaseModel):
     """A single normalized record emitted by a :class:`Connector`.
 
@@ -241,4 +263,5 @@ __all__ = [
     "RawRecord",
     "RecordBatch",
     "RecordStream",
+    "parse_timestamp",
 ]

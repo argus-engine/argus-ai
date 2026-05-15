@@ -25,6 +25,11 @@ from argus.platform_core.ingestion.base import (
     RawRecord,
     RecordBatch,
     RecordStream,
+    parse_timestamp,
+)
+from argus.platform_core.ingestion.structured import (
+    StructuredCSVConfig,
+    StructuredCSVConnector,
 )
 
 __all__ = [
@@ -34,4 +39,7 @@ __all__ = [
     "RawRecord",
     "RecordBatch",
     "RecordStream",
+    "StructuredCSVConfig",
+    "StructuredCSVConnector",
+    "parse_timestamp",
 ]
