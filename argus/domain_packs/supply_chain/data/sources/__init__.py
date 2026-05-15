@@ -28,12 +28,30 @@ from argus.domain_packs.supply_chain.data.sources._paths import (
     is_complete,
     mark_complete,
 )
+from argus.domain_packs.supply_chain.data.sources.edgar import (
+    DEFAULT_EDGAR_COMPANIES,
+    download_edgar_sample,
+)
+from argus.domain_packs.supply_chain.data.sources.gdelt import (
+    DEFAULT_GKG_THEMES,
+    download_gdelt_gkg_subset,
+)
+from argus.domain_packs.supply_chain.data.sources.kaggle import (
+    DATACO_DATASET,
+    download_dataco,
+)
 
 __all__ = [
+    "DATACO_DATASET",
+    "DEFAULT_EDGAR_COMPANIES",
+    "DEFAULT_GKG_THEMES",
     "RateLimitedClient",
     "TokenBucket",
     "atomic_write_bytes",
     "clear_complete_marker",
+    "download_dataco",
+    "download_edgar_sample",
+    "download_gdelt_gkg_subset",
     "is_complete",
     "mark_complete",
 ]
