@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: Apache-2.0
+# ---------------------------------------------------------------------------
+# Pre-commit configuration for Argus.
+#
+# Install once after cloning:    pre-commit install --hook-type pre-commit --hook-type commit-msg
+# Or via the Makefile:           make hooks
+#
+# What runs and when:
+#   pre-commit stage:  whitespace hygiene, ruff lint+format, mypy, SPDX check.
+#   commit-msg stage:  Conventional Commits validation.
+#
+# Why mypy and the SPDX check run as `local` hooks instead of via their
+# pinned-mirror repos: both need to import project code or sit alongside
+# the project's actual venv. The mirror-based variants would isolate them
+# in pre-commit's own venv and miss our dependencies.
+# ---------------------------------------------------------------------------
+
+default_language_version:
+  python: python3.11
+
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (project venv)
+        entry: mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        require_serial: true
+
+      - id: spdx-header
+        name: SPDX-License-Identifier header check
+        entry: python ci/scripts/check_spdx.py
+        language: system
+        types_or: [python, markdown, yaml, toml]
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []
