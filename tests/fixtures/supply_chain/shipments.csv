@@ -1,0 +1,4 @@
+shipment_id,order_id,supplier_id,origin_location,destination_location,shipping_mode,scheduled_departure,actual_departure,scheduled_arrival,actual_arrival,status,units
+SHIP-001,ORD-1001,SUP001,DEHAM,GBLON,sea,2024-01-16T00:00:00+00:00,2024-01-16T00:30:00+00:00,2024-01-22T00:00:00+00:00,2024-01-23T04:15:00+00:00,delivered,2
+SHIP-002,ORD-1002,SUP002,USOAK,USLAX,road,2024-01-15T12:00:00+00:00,2024-01-15T12:00:00+00:00,2024-01-15T18:00:00+00:00,2024-01-15T17:45:00+00:00,delivered,1
+SHIP-003,ORD-1003,SUP001,DEHAM,GBLON,sea,2024-01-17T00:00:00+00:00,,2024-01-23T00:00:00+00:00,,in_transit,5

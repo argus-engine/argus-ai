@@ -1,0 +1,5 @@
+event_id,occurred_at,category,severity,source_name,source_url,title,summary,entities_mentioned
+EVT-001,2024-01-14T08:30:00+00:00,disruption,high,GDELT,https://example.com/gdelt/1,Port congestion in Long Beach extends,Long Beach port congestion enters second week,USLAX|SUP002
+EVT-002,2024-01-15T13:00:00+00:00,filing,medium,EDGAR,https://example.com/edgar/1,Bayside Manufacturing files 8-K material event,BSM disclosed Q4 inventory writedown,BSM|SUP002
+EVT-003,2024-01-16T06:00:00+00:00,weather,low,Reuters,,Electrical storm hits Penang industrial park,Brief disruption to local semiconductor manufacturing,MY|SUP003
+EVT-004,2024-01-17T22:00:00+00:00,news,info,Reuters,https://example.com/news/4,Routine update on DE rail network,Nothing of consequence happened,

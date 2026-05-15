@@ -1,0 +1,4 @@
+supplier_id,name,country,region,tier,industry_sic,ticker,cik
+SUP001,Acme Components Ltd,DE,EMEA,1,3674,,
+SUP002,Bayside Manufacturing Inc,US,NA,1,3711,BSM,0000123456
+SUP003,Penang Semicon SDN BHD,MY,APAC,2,3674,,

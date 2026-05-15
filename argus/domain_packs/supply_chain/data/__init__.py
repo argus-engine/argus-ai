@@ -14,6 +14,12 @@ the raw shape — it consumes the normalized Pydantic schemas declared here.
   connectors into normalized entity instances.
 """
 
+from argus.domain_packs.supply_chain.data.loaders import (
+    load_events,
+    load_orders,
+    load_shipments,
+    load_suppliers,
+)
 from argus.domain_packs.supply_chain.data.schemas import (
     EventCategory,
     EventSeverity,
@@ -38,4 +44,8 @@ __all__ = [
     "ShipmentStatus",
     "ShippingMode",
     "Supplier",
+    "load_events",
+    "load_orders",
+    "load_shipments",
+    "load_suppliers",
 ]
