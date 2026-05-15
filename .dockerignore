@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: Apache-2.0
+# Build context exclusions for the Argus Dockerfile.
+#
+# Goal: send the smallest possible context to the daemon and ensure no
+# untracked junk (caches, IDE state, downloaded datasets, agent state)
+# leaks into the image. Anything NOT explicitly needed by `infra/docker/
+# Dockerfile` at any of its stages is excluded here.
+
+# ---- Version control ---------------------------------------------------
+.git
+.gitignore
+.gitattributes
+
+# ---- Python build / runtime caches -------------------------------------
+__pycache__
+*.py[cod]
+*.so
+*.egg-info
+*.egg
+build
+dist
+.installed.cfg
+
+# ---- Virtual environments ----------------------------------------------
+.venv
+venv
+env
+ENV
+
+# ---- Tooling caches ----------------------------------------------------
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.tox
+.nox
+.cache
+.coverage
+.coverage.*
+htmlcov
+coverage.xml
+
+# ---- Tests and fixtures (not needed by the runtime image) --------------
+tests
+
+# ---- Downloaded datasets (gitignored already, doubly excluded here) ----
+data
+
+# ---- Logs and ML run artifacts -----------------------------------------
+logs
+*.log
+artifacts
+runs
+wandb
+mlruns
+
+# ---- Documentation (drop everything except the README the build uses) --
+docs
+*.md
+!README.md
+
+# ---- IDE / editor state ------------------------------------------------
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# ---- OS detritus -------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ---- Repo-level config not needed at runtime ---------------------------
+.github
+.pre-commit-config.yaml
+.python-version
+Makefile
+ci
+
+# ---- Infra config that isn't part of the runtime image -----------------
+infra/terraform
+infra/k8s
+docker-compose.yml
+docker-compose.*.yml
+
+# ---- Operational scripts (run from outside the container) --------------
+scripts
+
+# ---- Secrets / local environment files ---------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+kaggle.json
+.kaggle
+
+# ---- Local agent / tool state ------------------------------------------
+.claude
