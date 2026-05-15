@@ -31,6 +31,10 @@ from argus.platform_core.ingestion.structured import (
     StructuredCSVConfig,
     StructuredCSVConnector,
 )
+from argus.platform_core.ingestion.text import (
+    TextDocumentConfig,
+    TextDocumentConnector,
+)
 
 __all__ = [
     "Connector",
@@ -41,5 +45,7 @@ __all__ = [
     "RecordStream",
     "StructuredCSVConfig",
     "StructuredCSVConnector",
+    "TextDocumentConfig",
+    "TextDocumentConnector",
     "parse_timestamp",
 ]

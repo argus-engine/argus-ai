@@ -42,11 +42,23 @@ EXEMPT_FILENAMES = frozenset(
 """Filenames exempt from the check regardless of extension."""
 
 
+def _is_under_fixtures(path: Path) -> bool:
+    """True if any ancestor directory is named ``fixtures``.
+
+    Fixture files are data assets — committed sample CSVs, text snippets,
+    JSON dumps — and should look like the real upstream sources they
+    represent. Mandating an SPDX header on them would be cosmetic noise.
+    """
+    return any(parent.name == "fixtures" for parent in path.parents)
+
+
 def file_needs_header(path: Path) -> bool:
     """Decide whether a path is subject to the SPDX requirement."""
     if path.name in EXEMPT_FILENAMES:
         return False
     if path.suffix.lower() not in CHECKED_SUFFIXES:
+        return False
+    if _is_under_fixtures(path):
         return False
     try:
         if path.stat().st_size == 0:
