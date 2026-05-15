@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+# ---------------------------------------------------------------------------
+# Argus base configuration.
+#
+# All defaults live here. Environment-specific overrides go in `local.yaml`
+# (git-ignored when it contains secrets) or in pack-specific files under
+# `configs/packs/`. Code never reads paths or thresholds from constants —
+# it goes through pydantic-settings, which loads this file.
+# ---------------------------------------------------------------------------
+
+app:
+  name: argus
+  log_level: INFO
+  # Phase 1 placeholder. Real values land alongside the components that need them.
+
+ingestion:
+  # Per-connector defaults — full connector configs are merged in by each
+  # caller. Kept minimal here so changing a default does not silently affect
+  # specific connector instances.
+  default_batch_size: 256
+
+kg:
+  # Backend is pluggable (see docs/architecture.md). Default to the local
+  # NetworkX implementation; production deployments override this.
+  backend: networkx
+  neo4j_uri: bolt://localhost:7687
+
+api:
+  host: 0.0.0.0  # noqa: S104  — container default; override in prod
+  port: 8000

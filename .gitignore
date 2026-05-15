@@ -43,8 +43,10 @@ coverage.xml
 Thumbs.db
 
 # ---- Project ----
-# Real datasets are downloaded by scripts/download_data.py; only fixtures are committed.
-data/
+# Real datasets are downloaded by scripts/download_data.py and land in the
+# repo-root /data/ directory. Anchor with a leading slash so the rule does
+# not accidentally swallow `argus/domain_packs/<pack>/data/` source modules.
+/data/
 !tests/fixtures/
 
 # Local environment overrides
