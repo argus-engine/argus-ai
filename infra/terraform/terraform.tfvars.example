@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: Apache-2.0
+# ---------------------------------------------------------------------------
+# Example variable values for `terraform apply`.
+#
+# Copy this file to `terraform.tfvars` (gitignored when populated with real
+# values) and fill in the placeholders. Variables marked REQUIRED have no
+# default in variables.tf and must be supplied.
+#
+# **Phase 1 status:** STUB. The corresponding resources don't exist yet, so
+# `terraform plan` is a no-op. The contract is locked in now so Phase 6's
+# resource declarations don't need to renegotiate the input surface.
+# ---------------------------------------------------------------------------
+
+# REQUIRED — which cloud the env targets
+cloud_provider = "gcp" # or "aws"
+
+# REQUIRED — primary region (cloud-specific code)
+region = "europe-west2" # GCP example; for AWS use e.g. "eu-west-2"
+
+# Deployment environment
+environment = "dev"
+
+# GCP-only — REQUIRED when cloud_provider = "gcp"
+project_id = "my-argus-project"
+
+# AWS-only — REQUIRED when cloud_provider = "aws"
+# aws_account_id = "123456789012"
+
+# Image tag to deploy. Use a content-addressable digest for prod.
+argus_image_tag = "v0.1.0"
+
+# Provision the GPU node pool? Required for the Phase-3 predictive head.
+enable_gpu_pool = false
+
+# Use the cloud's managed Neo4j offering? Cheaper to operate; costs more.
+neo4j_managed = true
+
+# Tags applied to every resource that supports tagging / labelling.
+tags = {
+  project = "argus"
+  owner   = "platform"
+  cost    = "research"
+}
