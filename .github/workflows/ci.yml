@@ -141,11 +141,6 @@ jobs:
   docker-build:
     name: Docker build (cpu target, multi-arch, no push)
     runs-on: ubuntu-latest
-    # Auto-skip while no Dockerfile exists. GitHub treats a skipped
-    # required check as passing, so branch protection can require this
-    # job from day one and it activates the moment the Dockerfile is
-    # on the branch.
-    if: ${{ hashFiles('infra/docker/Dockerfile') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
