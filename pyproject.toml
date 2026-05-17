@@ -276,12 +276,13 @@ markers = [
 filterwarnings = [
     "error",
     "ignore::DeprecationWarning:pkg_resources.*",
-    # testcontainers emits this DeprecationWarning from inside its own Neo4j
-    # fixture (the library deprecated its internal @wait_container_is_ready
-    # helper but its own modules still use it). The upstream fix is to migrate
-    # to the structured wait-strategy API; until that lands we suppress the
-    # specific message so it does not turn the integration job red.
+    # testcontainers emits these DeprecationWarnings from inside its own Neo4j
+    # fixture (the library deprecated its internal wait helpers but its own
+    # modules still use them). The upstream fix is to migrate to the structured
+    # wait-strategy API; until that lands we suppress the two specific messages
+    # so they do not turn the integration job red.
     "ignore:The @wait_container_is_ready decorator is deprecated:DeprecationWarning",
+    "ignore:The wait_for_logs function with string or callable predicates is deprecated:DeprecationWarning",
 ]
 
 # -------------------------------------------------------------------
