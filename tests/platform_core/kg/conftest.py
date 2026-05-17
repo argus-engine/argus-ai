@@ -134,6 +134,12 @@ def _build_supply_chain(backend: KGBackend) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 # Containers
 # ---------------------------------------------------------------------------
+#
+# TODO(kg-testing): migrate to testcontainers' structured wait-strategy API
+# (HttpWaitStrategy / LogMessageWaitStrategy) once they remove the deprecated
+# @wait_container_is_ready decorator. The matching ignore-filter in
+# pyproject.toml suppresses the deprecation that fires from inside the Neo4j
+# fixture today; remove the filter at the same time as this migration.
 
 
 def _new_neo4j_container(*, with_apoc: bool) -> Any:
