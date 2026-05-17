@@ -170,14 +170,57 @@ class KGBackend(Protocol):
     def upsert_node(self, node: KGNode) -> None:
         """Insert or update a node, keyed by ``node.id``.
 
-        Replacing an existing node merges ``properties`` and unions
-        ``source_refs`` — the implementations document the exact merge
-        semantics. Must be idempotent: repeated calls with the same input
-        leave the graph in the same state.
+        **Merge semantics** when a node with the same ``id`` already exists:
+
+        - ``type`` MUST match. Re-upserting an ``id`` with a different
+          :class:`NodeType` is a bug (the adapter would be overwriting,
+          say, a supplier with a customer at the same key) and raises
+          :class:`ValueError`.
+        - ``properties`` are merged per-key. Values from the incoming
+          node override values from the existing node when both supply
+          the same key; existing keys absent from the incoming node are
+          preserved.
+        - ``source_refs`` are unioned with deduplication, preserving
+          first-seen order — the provenance trail accumulates across
+          repeated ingest of the same logical entity.
+
+        Example::
+
+            backend.upsert_node(
+                KGNode(
+                    id="supplier:SUP-001",
+                    type=NodeType.SUPPLIER,
+                    properties={"name": "Acme", "country": "GB"},
+                    source_refs=("dataco:row-7",),
+                )
+            )
+            backend.upsert_node(
+                KGNode(
+                    id="supplier:SUP-001",
+                    type=NodeType.SUPPLIER,
+                    properties={"country": "US", "industry_sic": "3711"},
+                    source_refs=("edgar:CIK-12345",),
+                )
+            )
+            # Stored: name="Acme" (preserved), country="US" (overridden),
+            #         industry_sic="3711" (added);
+            #         source_refs=("dataco:row-7", "edgar:CIK-12345").
+
+        Must be idempotent: repeated calls with identical input leave
+        the graph in the same state. Every implementation in this
+        package follows these semantics identically; integration tests
+        cover the merge cases on every backend.
         """
 
     def upsert_edge(self, edge: KGEdge) -> None:
         """Insert or update an edge, keyed by ``edge.id``.
+
+        Merge semantics mirror :meth:`upsert_node` exactly:
+
+        - ``type`` MUST match an existing edge with the same ``id`` —
+          a mismatch raises :class:`ValueError`.
+        - ``properties`` merge per-key (incoming overrides existing).
+        - ``source_refs`` union with deduplication, first-seen order.
 
         Edges referencing nodes that have not been upserted yet are
         tolerated — real data streams arrive out of order, and waiting
