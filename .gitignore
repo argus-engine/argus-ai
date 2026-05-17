@@ -69,3 +69,5 @@ mlruns/
 *.key
 credentials.json
 kaggle.json
+# Local-only GitHub PAT for CI log fetches (Actions:Read scope).
+.github_token.txt
