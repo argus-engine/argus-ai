@@ -3,21 +3,27 @@
 # Argus CI pipeline.
 #
 # Runs on every pull request to main and on every push to main (so we
-# catch post-merge regressions promptly). Five jobs:
+# catch post-merge regressions promptly). Jobs:
 #
-#   lint        — ruff check + ruff format --check (gates)
-#   typecheck   — mypy strict (gates)
-#   test        — pytest matrix on Python 3.11 + 3.12 (gates)
-#   security    — bandit gates; pip-audit warns but does not gate in Phase 1
-#   docker-build— buildx multi-arch (amd64 + arm64), no push (gates once the
-#                 Dockerfile lands in Task #11)
+#   lint              — ruff check + ruff format --check (gates)
+#   typecheck         — mypy strict (gates)
+#   test              — pytest matrix on Python 3.11 + 3.12 (gates)
+#   security          — bandit gates; pip-audit warns but does not gate yet
+#   docker-build      — buildx multi-arch (amd64 + arm64), no push (gates)
+#   changes           — detects file paths touched in the diff, sets outputs
+#                       consumed by path-gated jobs below
+#   integration-test  — pytest -m integration with testcontainers + Neo4j +
+#                       the [kg] extra; only runs when KG code or tests are
+#                       touched (gates when it runs)
 #
 # In-progress runs on the same ref are cancelled when a newer commit
 # arrives — saves CI minutes on busy PRs and keeps the latest commit
 # authoritative.
 #
 # CI never hits live external APIs. Every Kaggle / GDELT / SEC EDGAR
-# integration is mocked via pytest_httpx or a Protocol substitute.
+# integration is mocked via pytest_httpx or a Protocol substitute. The
+# Neo4j integration tests run against a testcontainers-spawned Neo4j
+# container, not a live database.
 # ---------------------------------------------------------------------------
 
 name: CI
@@ -160,3 +166,53 @@ jobs:
         # Phase-6 image-push workflow; building all three multi-arch
         # in every PR is gratuitous CI minutes given the dep-install
         # cache hit-rate.
+
+  changes:
+    # Detect which file paths the current diff touches. Downstream jobs
+    # gate themselves on these outputs so heavy work (e.g. spinning up
+    # Neo4j in a testcontainer) only runs when its surface area has
+    # actually changed.
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      kg: ${{ steps.filter.outputs.kg }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            kg:
+              - 'argus/platform_core/kg/**'
+              - 'tests/platform_core/kg/**'
+              - 'pyproject.toml'
+              - '.github/workflows/ci.yml'
+
+  integration-test:
+    name: Integration tests (Neo4j via testcontainers)
+    runs-on: ubuntu-latest
+    needs: [test, changes]
+    if: needs.changes.outputs.kg == 'true'
+    # Budget the whole job at 5 minutes. Container startup is the
+    # heavy step and should complete well within that; a stuck
+    # testcontainer must not burn the runner budget.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install dev + kg extras
+        # [kg] pulls in the Neo4j Python driver; [dev] already carries
+        # testcontainers[neo4j]. Together they give pytest -m integration
+        # everything it needs to spin a Neo4j container, talk to it, and
+        # tear it down.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,kg]"
+      - name: pytest -m integration
+        run: pytest -m integration
+        env:
+          PYTHONUNBUFFERED: "1"

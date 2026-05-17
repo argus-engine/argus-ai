@@ -54,8 +54,12 @@ typecheck:  ## Run mypy in strict mode
 	mypy
 
 .PHONY: test
-test:  ## Run pytest with coverage
+test:  ## Run pytest with coverage (unit tests only; excludes -m integration)
 	$(PYTEST) --cov=argus --cov-report=term-missing
+
+.PHONY: integration
+integration:  ## Run integration tests via pytest -m integration (requires Docker)
+	$(PYTEST) -m integration
 
 .PHONY: security
 security:  ## Run bandit + pip-audit
@@ -63,7 +67,7 @@ security:  ## Run bandit + pip-audit
 	pip-audit
 
 .PHONY: check
-check: lint typecheck test  ## Run lint, typecheck, and tests (CI-equivalent)
+check: lint typecheck test  ## Run lint, typecheck, and unit tests (CI-equivalent)
 
 # ---- runtime --------------------------------------------------------------
 

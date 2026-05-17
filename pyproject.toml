@@ -108,6 +108,7 @@ dev = [
     "pre-commit>=3.7",
     "types-pyyaml",
     "types-requests",
+    "testcontainers[neo4j]>=4.5",
 ]
 
 [project.urls]
@@ -189,6 +190,14 @@ ignore = [
 "scripts/**/*.py" = [
     "ANN",      # Scripts are not library code
 ]
+# The KG layer uses deliberate lazy imports so the [kg] optional extra
+# stays opt-in: the package must remain importable on a bare [dev]
+# install. PLC0415 flags those imports as a stylistic violation; they
+# are the design.
+"argus/platform_core/kg/factory.py" = ["PLC0415"]
+"argus/platform_core/kg/neo4j_backend.py" = ["PLC0415"]
+"tests/platform_core/kg/conftest.py" = ["PLC0415"]
+"tests/platform_core/kg/test_neo4j_backend.py" = ["PLC0415"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["argus"]
@@ -214,6 +223,12 @@ no_implicit_optional = true
 show_error_codes = true
 pretty = true
 files = ["argus", "tests"]
+# Tests use namespace-package layout (no __init__.py). Two files named
+# conftest.py at different paths confuse the default module resolver;
+# the combination below tells mypy to derive module names from file
+# paths so the two conftests don't collide.
+namespace_packages = true
+explicit_package_bases = true
 
 # External libraries without stubs — silence the missing-imports complaint
 # rather than littering source files with `# type: ignore`.
@@ -230,6 +245,7 @@ module = [
     "transformers.*",
     "torch.*",
     "streamlit.*",
+    "testcontainers.*",
 ]
 ignore_missing_imports = true
 
@@ -249,6 +265,8 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--showlocals",
+    "-m",
+    "not integration",
 ]
 markers = [
     "slow: tests that take more than a couple seconds",
