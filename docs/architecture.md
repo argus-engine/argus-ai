@@ -66,13 +66,15 @@ Argus has four extension points. Each is an abstract base class or `Protocol` un
 | Extension point | Interface | What you'd swap |
 |---|---|---|
 | Ingestion source | `Connector` (`argus.platform_core.ingestion.base`) | A new file format, API, or stream |
-| KG backend | `KGBackend` (lands in Phase 2) | Neo4j → NetworkX, ArangoDB, Memgraph |
+| KG backend | `KGBackend` (`argus.platform_core.kg.base`, delivered in Phase 2 — `v0.2.0`) | Neo4j → NetworkX, ArangoDB, Memgraph |
 | LLM | `LLMProvider` (lands in Phase 4) | OpenAI → local model, vLLM, Bedrock |
 | Reviewer transport | `ReviewSink` (lands in Phase 5) | Streamlit UI → Slack interactive, Linear ticket |
 
-Phase 1 ships only `Connector` because models, RAG, KG, and HITL surface in later phases. Stubbing interfaces ahead of
-their implementations was discussed and explicitly deferred (see decisions F and G in `memory/`-tracked Phase 1
-decisions).
+Phase 1 shipped `Connector`. Phase 2 added `KGBackend` plus its NetworkX and Neo4j implementations, the supply-chain
+`KGAdapter` that projects the four supply-chain entities onto typed nodes/edges, and the `KGAdapter.counters()` /
+`IngestionReport.adapter_counters` seam for pack-specific diagnostic counts. `LLMProvider` and `ReviewSink` still
+surface in later phases — stubbing them ahead of their implementations was discussed and explicitly deferred (see
+decisions F and G in `memory/`-tracked Phase 1 decisions). See [`kg.md`](kg.md) for the as-built KG layer.
 
 ## Data flow: a single prediction's lifecycle
 
@@ -103,7 +105,8 @@ sequenceDiagram
     end
 ```
 
-Phase 1 covers steps 1–2 of this flow. Steps 3–9 land across Phases 2–5.
+Phase 1 covered steps 1–2 (ingestion). Phase 2 added step 4 (KG upsert) plus the cascading-risk and subgraph queries
+the later phases will read from. Steps 3, 5–9 land across Phases 3–5.
 
 ## Configuration
 

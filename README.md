@@ -10,8 +10,8 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-strict-2a6db2.svg)](pyproject.toml)
-[![Coverage](https://img.shields.io/badge/coverage-report--only%20phase%201-lightgrey.svg)](#roadmap)
-[![Status](https://img.shields.io/badge/status-alpha%20%C2%B7%20phase%201-orange.svg)](#roadmap)
+[![Coverage](https://img.shields.io/badge/coverage-83%25%20enforced-brightgreen.svg)](#roadmap)
+[![Status](https://img.shields.io/badge/status-alpha%20%C2%B7%20v0.2.0-blue.svg)](#roadmap)
 
 </div>
 
@@ -152,9 +152,9 @@ These are guardrails, not aspirations. Every PR is reviewed against them.
 
 | Phase | Scope | Status |
 |---|---|---|
-| **1. Scaffold + ingestion + docs + CI** | Repo skeleton, packaging, ingestion ABCs + connectors, supply-chain schemas + loaders, source downloaders, CI, Docker, docs | **in progress** |
-| **2. Knowledge graph engine** | Neo4j construction from supply-chain entities, cascading-risk queries, NetworkX fallback, `KGBackend` Protocol | next |
-| **3. Predictive head with evidential uncertainty** | Baseline tabular models (LightGBM, XGBoost), evidential heads, cross-modal fusion, `UncertainPrediction` schema | |
+| **1. Scaffold + ingestion + docs + CI** | Repo skeleton, packaging, ingestion ABCs + connectors, supply-chain schemas + loaders, source downloaders, CI, Docker, docs | **complete — `v0.1.0`** |
+| **2. Knowledge graph engine** | `KGBackend` Protocol, Neo4j + NetworkX backends, supply-chain `KGAdapter`, cascading-risk + subgraph queries, integration tests on real Neo4j | **complete — `v0.2.0`** |
+| **3. Predictive head with evidential uncertainty** | Baseline tabular models (LightGBM, XGBoost), evidential heads, cross-modal fusion, `UncertainPrediction` schema | **next** |
 | **4. RAG + grounding rubric + fabrication check** | `LLMProvider` (OpenAI + local), retriever over KG + vector store, grounding rubric, fabrication check | |
 | **5. HITL dashboard + active learning loop** | Streamlit reviewer dashboard, `ReviewSink` Protocol, disagreement schema, active-learning feedback into Phase-3 models, evaluation harness | |
 | **6. Terraform multi-cloud deployment** | Terraform for GCP + AWS, multi-arch image push, K8s manifests, OpenTelemetry traces, Prometheus + Grafana | |
