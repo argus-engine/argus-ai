@@ -30,8 +30,8 @@ Portfolio repo for senior ML/AI roles — headline target is the KTP Associate r
 | Phase | Scope | Status |
 |---|---|---|
 | **1. Scaffold + ingestion + docs + CI** | Repo skeleton, packaging, ingestion ABCs + connectors, supply-chain schemas + loaders, source downloaders, CI, Docker, docs | ✅ **complete** — `v0.1.0` |
-| **2. Knowledge graph engine** | Neo4j construction from supply-chain entities, cascading-risk queries, NetworkX fallback, `KGBackend` Protocol | ⏭ **next** |
-| **3. Predictive head with evidential uncertainty** | Baseline tabular models (LightGBM, XGBoost), evidential regression / classification heads, cross-modal fusion, `UncertainPrediction` schema | not started |
+| **2. Knowledge graph engine** | Neo4j construction from supply-chain entities, cascading-risk + subgraph queries, NetworkX fallback, `KGBackend` Protocol, supply-chain `KGAdapter`, integration tests on real Neo4j | ✅ **complete** — `v0.2.0` |
+| **3. Predictive head with evidential uncertainty** | Baseline tabular models (LightGBM, XGBoost), evidential regression / classification heads, cross-modal fusion, `UncertainPrediction` schema | ⏭ **next** |
 | **4. RAG + grounding rubric + fabrication check** | `LLMProvider` (OpenAI + local), retriever over KG + vector store, grounding rubric, fabrication check, pack-specific prompt assets | not started |
 | **5. HITL dashboard + active learning loop** | Streamlit reviewer dashboard, `ReviewSink` Protocol, disagreement schema, active-learning feedback into Phase-3 models, evaluation harness (calibration / coverage / grounding fidelity) | not started |
 | **6. Terraform multi-cloud deployment** | Terraform modules for GCP + AWS, multi-arch image push, K8s manifests, OpenTelemetry traces, Prometheus + Grafana | not started |
@@ -42,7 +42,8 @@ Each phase ends with a tagged release, refreshed `docs/architecture.md`, and run
 
 ## Where we are now
 
-**Phase 1 complete (tagged `v0.1.0`).** Phase 2 (knowledge graph engine) is next.
+**Phase 1 + Phase 2 complete (tagged `v0.1.0` and `v0.2.0`).** Phase 3
+(predictive head with evidential uncertainty) is next.
 
 Phase-1 task ledger (all complete):
 
@@ -61,27 +62,48 @@ Phase-1 task ledger (all complete):
 
 **State at the close of Phase 1:** **`v0.1.0` tag**, ≈33 commits on `main`, **233 tests passing in ≈4s**, zero live-API calls in CI, clean-clone install verified end-to-end (uvicorn → `/health` round-trip).
 
-## Phase 2 entry points
+Phase-2 task ledger (all complete):
+
+1. ✅ KG schema (`NodeType`, `EdgeType`, `KGNode`, `KGEdge`, stable-id helpers), `KGBackend` Protocol with merge semantics, `KGAdapter` Protocol, `KGBuilder` orchestrator, `IngestionReport`
+2. ✅ `NetworkXBackend` (in-process), `make_backend` factory with lazy `[kg]`-extras import, contract tests
+3. ✅ `Neo4jBackend` (production), APOC-availability check, message-scoped suppression of two `testcontainers` deprecation warnings, parametrised parity tests over both backends with `@pytest.mark.integration`
+4. ✅ `SupplyChainKGAdapter` projecting all four supply-chain entities to typed nodes/edges with four-rule mention resolution, `unresolved_mentions` counter surfaced via new `KGAdapter.counters()` seam → `IngestionReport.adapter_counters`; deterministic flagship fixture; cascading-risk + subgraph + end-to-end tests parametrised over both backends
+5. ✅ `docs/kg.md` reader-facing doc, coverage gate flipped from report-only to enforced at 83%, this update, `v0.2.0` tag
+
+**State at the close of Phase 2:** **`v0.2.0` tag**, **396 tests passing + 1 skipped + 42 deselected (integration) in ≈5s** locally; **integration job green in CI on real Neo4j 5.20-community + APOC via testcontainers**; coverage gate enforced at 83% (current measured = 83.5%); no AI attribution anywhere in tree or history.
+
+**In-flight design changes worth recording (vs the plan as posed at Phase-2 open):**
+
+- The `KGAdapter` Protocol gained an optional `counters() -> Mapping[str, int]` method so pack-specific adapters can surface diagnostic counts (like the supply-chain adapter's `unresolved_mentions`) without coupling `platform_core` to a supply-chain concept. The new field on `IngestionReport` is `adapter_counters: dict[str, int]`.
+- Backend test fixtures (`neo4j_container`, `backend`, etc.) were hoisted from `tests/platform_core/kg/conftest.py` to `tests/conftest.py` so the supply-chain flagship tests share one Neo4j container per pytest session with the parity tests. The original "layer-specific fixtures live alongside the layer" convention was relaxed because the KG infrastructure is now organically cross-cutting.
+- The flagship cascade fixture topology produces 16 RiskPaths at `max_hops=2` from `supplier:SUP-A` (not 15 as the plan-readback approximated); the off-by-one is `region:NA` reached at hop 2 via `O4 -SHIPS_TO-> NA`. The five-node exclusion set is `{SUP-B, O5, P3, SH-O5, E2}` — E2 is structurally SUP-B-side via its incoming `MENTIONS` edges. The fixture's module docstring is the test contract; counts and exclusions are pinned there.
+- Two `testcontainers` deprecation warnings (the `@wait_container_is_ready` decorator and the `wait_for_logs` string-predicate form) had to be suppressed via message-scoped filters in `pyproject.toml`. The proper fix — migrate to the structured wait-strategy API (`HttpWaitStrategy` / `LogMessageWaitStrategy`) — has a TODO breadcrumb in `tests/conftest.py` near the container fixtures.
+
+**Known follow-up (recorded, not blocking):**
+
+- Coverage on `neo4j_backend.py` shows as 14% in the unit-test report because the integration tests that exercise it run in a separate CI job whose coverage isn't aggregated. Aggregating would raise the threshold meaningfully. Out of scope for Phase 2; revisit at Phase 6 alongside the rest of the CI work.
+
+## Phase 3 entry points
 
 When the next session opens, start here:
 
 | Where | Why |
 |---|---|
 | `docs/PROJECT_CONTEXT.md` (this file) | The fast-onboarding read |
-| `argus/platform_core/kg/__init__.py` | Phase-2 scope: `KGBackend` Protocol, Neo4j and NetworkX backends, schema definitions, cascading-risk queries, subgraph extraction |
-| `docs/architecture.md` | Layering contract + the `KGBackend` extension point row |
-| `argus/domain_packs/supply_chain/data/schemas.py` | The four entity shapes (`Order`, `Supplier`, `Shipment`, `EventSignal`) that the KG construction will project to nodes + relations |
-| `docker-compose.yml` | The `neo4j` service is already up with APOC pre-installed and procedures unrestricted — nothing to change here for Phase 2 |
-| `infra/terraform/data.tf` | Phase-6 managed-Neo4j scope; useful as a reference for what we're prototyping locally in Phase 2 |
+| `docs/architecture.md` | Layering contract; `models` and `rag` rows describe the Phase-3 boundaries |
+| `docs/kg.md` | What the KG layer stores and how to query it — Phase 3 consumes `cascading_risk` + `subgraph` for KG-context features |
+| `argus/platform_core/kg/base.py` | The `KGBackend` Protocol the predictive head will call to enrich features |
+| `argus/platform_core/models/` (currently a skeleton) | Where the evidential head, the `UncertainPrediction` schema, and the calibration utilities will land |
+| `argus/domain_packs/supply_chain/data/schemas.py` | The four supply-chain entities the features layer will encode |
 
-**Phase 2 acceptance criteria (proposed, refine when the phase opens):**
+**Phase 3 acceptance criteria (proposed, refine when the phase opens):**
 
-- `KGBackend` Protocol in `argus.platform_core.kg.base` with `Neo4jBackend` and `NetworkXBackend` implementations behind it
-- Projection from `Order` / `Supplier` / `Shipment` / `EventSignal` to typed graph nodes + relations
-- At least one **cascading-risk query** — given a supplier-failure event, return the ordered list of downstream orders and customers at risk
-- Tests against both backends (NetworkX in unit tests, Neo4j via the docker-compose service in integration tests tagged `@pytest.mark.integration`)
-- Coverage gate flips from "report-only" to "enforced" (per the standing rule that Phase 2 gates coverage)
-- Updated `docs/architecture.md` + `docs/PROJECT_CONTEXT.md` at phase close, `v0.2.0` tag
+- `UncertainPrediction` schema (frozen Pydantic) carrying point + band + attribution
+- Baseline tabular heads (LightGBM, XGBoost) wired through a uniform model `Protocol`
+- Evidential regression / classification head (Normal-Inverse-Gamma or equivalent) producing calibrated uncertainty
+- Cross-modal fusion stub that combines tabular features with KG-context features (`RiskPath` + induced subgraph stats)
+- Calibration evaluation utilities (reliability diagram, ECE)
+- Updated `docs/architecture.md`, this file, and a `docs/models.md` at phase close, `v0.3.0` tag
 
 ## Locked-in decisions
 
@@ -95,6 +117,11 @@ When the next session opens, start here:
 | Phase 1 deadline | **2026-05-29** | KTP application target |
 | Schemas approved | `Decimal` money, six-value `OrderStatus`, opaque `entities_mentioned: list[str]`, `raw` on all four entities | Red-lined explicitly during Task #8 — see commit `c6db7bb` |
 | Deferred from Phase 1 | `UncertainPrediction` schema (→ Phase 3), `AuthProvider` stub (→ Phase 5+), Terraform resources (→ Phase 6), `LLMProvider` (→ Phase 4), KG queries (→ Phase 2), models (→ Phase 3) | Right scope for two-week deadline |
+| KG node + edge taxonomy | Seven `NodeType`s (`SUPPLIER`/`PRODUCT`/`REGION`/`ORDER`/`SHIPMENT`/`CUSTOMER`/`EVENT_SIGNAL`) and ten `EdgeType`s | Spans physical actors, goods, geography, and external signals; first-class derived nodes for queryability — see `docs/kg.md` |
+| Edge orientation | FK direction, not impact direction | Disruption propagates by walking the graph bidirectionally; both backends' BFS does so explicitly |
+| Adapter counters seam | `KGAdapter.counters() -> Mapping[str, int]` + `IngestionReport.adapter_counters: dict[str, int]` | Pack-specific diagnostic counts without coupling `platform_core` to pack concepts |
+| Coverage gate threshold | `fail_under = 83` (Phase 2 close) | Current measured unit-test coverage is 83.5%; gate is a regression-catcher, not aspirational |
+| Deferred from Phase 2 | `UncertainPrediction` (→ Phase 3), Phase-3 predictive head, integration-coverage aggregation, structured-wait-strategy migration for testcontainers fixtures (→ when upstream deprecation forces it) | Scope discipline at phase boundaries |
 
 Full decisions ledger in `memory/project_phase1_decisions.md`.
 
@@ -110,6 +137,13 @@ Full decisions ledger in `memory/project_phase1_decisions.md`.
 | **Money is `Decimal`**, never float | Audit-traceable accounting precision |
 | `RawRecord.raw` field carried on every entity | Audit trail beats memory overhead in this domain |
 | KG enforces FK integrity, not Pydantic | Order + shipment streams arrive out of order |
+| KG `upsert_*` merge semantics binding on every backend | Type-mismatch raises; properties merge per key with incoming overriding; `source_refs` union with first-seen order; identical contract across NetworkX + Neo4j |
+| KG BFS traverses both edge directions | Edges encode FK direction; risk propagates either way. APOC's `relationshipFilter=""` (or `"TYPE\|TYPE"`, no `>` / `<`) gives the same bidirectional semantics on Neo4j |
+| `Subgraph` is induced, not spanning-tree | RAG (Phase 4) needs every edge between collected nodes for grounding, not just BFS-traversed ones |
+| Supply-chain adapter is stateful per build | Mention-resolution scans entities seen so far; caller-side ordering contract: Suppliers → Orders → Shipments → EventSignals |
+| Mention resolution: skip + count, no placeholder nodes | Visibility via `IngestionReport.adapter_counters["unresolved_mentions"]` keeps the graph clean of synthetic noise |
+| APOC required on Neo4j; `make_backend` falls back to NetworkX on bare install | Lazy-import keeps `argus-risk` importable without `[kg]` extras; clear `RuntimeError` if Neo4j is up but APOC is missing |
+| Decimal stored as `str` in KG node properties | Neo4j driver rejects `Decimal`; round-trippable as `Decimal(s)` on read; precision preserved |
 | `.partial` + `os.replace` atomic rename for every downloaded file | Same-filesystem atomic on POSIX *and* Windows; no half-written files |
 | `.complete` marker per source directory | Whole-source idempotency in one `stat()` call |
 | Token-bucket rate limiter with injectable `now`/`sleep` | Real SEC 10 req/s ceiling honored; tests verify without sleeping |
