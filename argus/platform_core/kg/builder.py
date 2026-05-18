@@ -24,7 +24,7 @@ supply-chain entities; a future pack would parameterise over its own.
 from __future__ import annotations
 
 import time
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from typing import Generic, Protocol, TypeVar, runtime_checkable
 
@@ -66,6 +66,19 @@ class KGAdapter(Protocol[_EntityT_contra]):
     def to_edges(self, entity: _EntityT_contra) -> Iterable[KGEdge]:
         """Project ``entity`` into the edges it implies."""
 
+    def counters(self) -> Mapping[str, int]:
+        """Return zero-or-more named counters accumulated during ingestion.
+
+        Called once by :meth:`KGBuilder.ingest` after the entity loop
+        completes; the returned mapping is copied into
+        :attr:`IngestionReport.adapter_counters`. Stateless adapters
+        return an empty mapping. Pack-specific adapters expose counts
+        that have no platform-core meaning here (for example, the
+        supply-chain adapter reports ``unresolved_mentions`` for
+        ``EventSignal.entities_mentioned`` strings that did not match
+        any known node).
+        """
+
 
 # ---------------------------------------------------------------------------
 # Report
@@ -93,6 +106,14 @@ class IngestionReport(BaseModel):
     started_at: datetime = Field(
         ...,
         description="UTC, tz-aware timestamp captured at the start of ingest().",
+    )
+    adapter_counters: dict[str, int] = Field(
+        default_factory=dict,
+        description=(
+            "Per-adapter named counters collected after ingestion completes "
+            "(e.g. unresolved-entity counts from a pack-specific adapter). "
+            "Empty for stateless adapters."
+        ),
     )
 
 
@@ -145,6 +166,7 @@ class KGBuilder(Generic[EntityT]):
             edges_seen=edges_seen,
             duration_ms=duration_ms,
             started_at=started_at,
+            adapter_counters=dict(self._adapter.counters()),
         )
 
 

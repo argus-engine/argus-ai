@@ -16,7 +16,7 @@ What these tests verify:
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from datetime import UTC, datetime
 
 import pytest
@@ -154,6 +154,34 @@ class _FakeAdapter:
             type=EdgeType.HAS_SUPPLIER,
         )
 
+    def counters(self) -> Mapping[str, int]:
+        return {}
+
+
+class _CountingAdapter:
+    """Stateful adapter: emits the same node/edge as _FakeAdapter and counts entities.
+
+    Exists to exercise the :meth:`counters` Protocol surface end-to-end —
+    the builder must read the counters after the loop and copy them into
+    the :class:`IngestionReport`.
+    """
+
+    def __init__(self) -> None:
+        self._entities_seen = 0
+
+    def to_nodes(self, entity: _FakeEntity) -> Iterable[KGNode]:
+        self._entities_seen += 1
+        yield KGNode(
+            id=make_node_id(NodeType.SUPPLIER, entity.supplier_key),
+            type=NodeType.SUPPLIER,
+        )
+
+    def to_edges(self, entity: _FakeEntity) -> Iterable[KGEdge]:  # noqa: ARG002
+        return ()
+
+    def counters(self) -> Mapping[str, int]:
+        return {"entities_seen": self._entities_seen}
+
 
 # ---------------------------------------------------------------------------
 # Protocol satisfaction
@@ -285,6 +313,43 @@ class TestIngestionReport:
 
         with pytest.raises(ValidationError):
             report.nodes_seen = 999
+
+    def test_adapter_counters_default_to_empty_for_stateless_adapter(self) -> None:
+        backend = _StubBackend()
+        builder = KGBuilder(backend, _FakeAdapter())
+
+        report = builder.ingest([_FakeEntity("SUP-1", "ORD-1")])
+
+        assert report.adapter_counters == {}
+
+    def test_adapter_counters_surface_from_stateful_adapter(self) -> None:
+        backend = _StubBackend()
+        builder = KGBuilder(backend, _CountingAdapter())
+
+        report = builder.ingest(
+            [
+                _FakeEntity("SUP-1", "ORD-1"),
+                _FakeEntity("SUP-2", "ORD-2"),
+                _FakeEntity("SUP-3", "ORD-3"),
+            ]
+        )
+
+        assert report.adapter_counters == {"entities_seen": 3}
+
+    def test_adapter_counters_are_a_fresh_dict_not_an_alias(self) -> None:
+        # The builder copies counters into the report so an adapter that
+        # mutates its internal counter after ingest cannot retroactively
+        # change a report the caller is already holding.
+        backend = _StubBackend()
+        adapter = _CountingAdapter()
+        builder = KGBuilder(backend, adapter)
+
+        report = builder.ingest([_FakeEntity("SUP-1", "ORD-1")])
+        assert report.adapter_counters == {"entities_seen": 1}
+
+        builder.ingest([_FakeEntity("SUP-2", "ORD-2")])
+        # The earlier report stays at its captured value.
+        assert report.adapter_counters == {"entities_seen": 1}
 
 
 # ---------------------------------------------------------------------------
