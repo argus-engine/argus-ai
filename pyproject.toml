@@ -300,6 +300,14 @@ omit = [
 precision = 1
 show_missing = true
 skip_covered = false
+# Flipped from report-only to enforced at Phase 2 close. The threshold is
+# set to the current measured unit-test coverage (83.5%, rounded down with
+# a 0.5-point buffer for run-to-run noise) — its job is to catch
+# regressions, not to push coverage upward. neo4j_backend.py shows as
+# poorly covered here because the integration tests that exercise it run
+# in a separate CI job whose coverage is not yet aggregated; raising the
+# floor before that aggregation lands would be misleading.
+fail_under = 83
 exclude_lines = [
     "pragma: no cover",
     "raise NotImplementedError",
