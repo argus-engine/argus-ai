@@ -50,9 +50,12 @@ class TestCascadingRiskFromSupA:
     def test_excludes_control_set_supp_b_side(self, backend: KGBackend) -> None:
         # Negative-assertion control: with SUP-B as a separate connected
         # component bridged only via region:NA, the SUP-B side is reachable
-        # at hop 3 (NA -> SH-O5 -> SUP-B), so max_hops=2 must NOT include
-        # any of {SUP-B, P3, O5, SH-O5}. Asserting this proves the BFS
-        # hop limit is enforced, not just that the BFS runs.
+        # earliest at hop 3 (NA -LOCATED_IN- SUP-B; NA <-SHIPS_TO- O5),
+        # deepest at hop 4 (SH-O5 / P3 / E2). max_hops=2 must therefore
+        # NOT include any of CASCADE_EXCLUDED_AT_MAX_HOPS_2 — see the
+        # fixture module docstring for the full hop-by-hop justification.
+        # Asserting this proves the BFS hop limit is enforced, not just
+        # that the BFS runs.
         _ingest_canonical(backend)
 
         paths = backend.cascading_risk("supplier:SUP-A", max_hops=2)

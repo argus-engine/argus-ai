@@ -25,9 +25,11 @@ topology therefore embeds an **isolated control supplier (SUP-B)**:
   from SUP-A at hop 2; SUP-B itself is reachable only at hop 3+.
 - At ``max_hops=2``, the cascade from SUP-A MUST stop before crossing
   NA into the SUP-B side. The flagship cascade test asserts both
-  inclusions and exclusions — the exclusion set (SUP-B, P3, O5, SH-O5)
-  is what proves the BFS hop limit is enforced, not just that the BFS
-  runs.
+  inclusions and exclusions — the five-node exclusion set
+  (SUP-B, O5, P3, SH-O5, E2) is what proves the BFS hop limit is
+  enforced, not just that the BFS runs. E2 is in the exclusion set
+  because it ``MENTIONS`` SUP-B and P3, which structurally places it
+  on the SUP-B side (E2 is reached at hop 4 via SUP-B).
 
 EventSignals further exercise the adapter's unresolved-mention counter:
 E1 mentions a known SUP-A and EMEA plus one ghost string; E3 mentions
@@ -86,9 +88,14 @@ Hop 2 — 6 new nodes::
     product:P1, product:P2
     region:NA
 
-Excluded at ``max_hops=2`` (the control set)::
+Excluded at ``max_hops=2`` (the five-node SUP-B-side control set;
+deepest member at hop 4)::
 
-    supplier:SUP-B, product:P3, order:O5, shipment:SH-O5
+    supplier:SUP-B   (hop 3, via NA -LOCATED_IN- SUP-B)
+    order:O5         (hop 3, via NA <-SHIPS_TO- O5)
+    product:P3       (hop 4, via O5 -OF_PRODUCT-> P3)
+    shipment:SH-O5   (hop 4, via O5 / SUP-B)
+    event_signal:E2  (hop 4, via SUP-B <-MENTIONS- E2)
 
 Expected: ``subgraph([supplier:SUP-A], max_hops=1)``
 -----------------------------------------------------
