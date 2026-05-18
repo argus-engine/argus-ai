@@ -196,7 +196,7 @@ ignore = [
 # are the design.
 "argus/platform_core/kg/factory.py" = ["PLC0415"]
 "argus/platform_core/kg/neo4j_backend.py" = ["PLC0415"]
-"tests/platform_core/kg/conftest.py" = ["PLC0415"]
+"tests/conftest.py" = ["PLC0415"]
 "tests/platform_core/kg/test_neo4j_backend.py" = ["PLC0415"]
 
 [tool.ruff.lint.isort]

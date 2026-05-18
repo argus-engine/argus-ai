@@ -1,26 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Shared fixtures for the knowledge-graph test suite.
+"""Parity-test-specific fixtures for the platform-core KG suite.
 
-The Neo4j fixtures lazy-import :mod:`testcontainers` and the Neo4j
-driver inside their bodies so this conftest stays importable on a base
-``[dev]`` install — collection happens before marker filtering, so a
-top-level ``import testcontainers`` would force the dev extras to carry
-testcontainers even when the integration suite is not being run.
+The KG backend fixtures themselves (``neo4j_container``, ``backend``,
+``networkx_backend``, ``neo4j_backend``, …) live in the top-level
+:mod:`tests.conftest` because they are shared with the supply-chain KG
+test layer. Only the canonical mini supply-chain graph that the parity
+tests assert against lives here — it is parity-test scaffolding, not
+generic backend infrastructure.
 
-Fixtures provided:
+Fixtures provided here:
 
-- ``neo4j_container`` (session) — a Neo4j 5.20-community container with
-  APOC enabled. One container per session; tests run serially against
-  it and reset state via ``backend.clear()``.
-- ``neo4j_no_apoc_container`` (session) — a second container without
-  APOC, used by the connection-time APOC-availability check test.
-- ``neo4j_backend`` (function) — a connected, cleared Neo4jBackend
-  pointing at the session container.
-- ``networkx_backend`` (function) — a connected NetworkXBackend.
-- ``backend`` (function, parametrised over ``["networkx", "neo4j"]``)
-  — the parametrised fixture parity tests run against. The Neo4j
-  parameter carries the ``integration`` marker so default ``pytest``
-  runs only the NetworkX variant.
 - ``supply_chain`` (function) — builds the canonical mini supply-chain
   graph on whichever backend the test is parametrised with and returns
   a dict of node-id shortcuts.
@@ -28,30 +17,17 @@ Fixtures provided:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
 import pytest
 
 from argus.platform_core.kg import (
     EdgeType,
-    KGBackendConfig,
     KGEdge,
     KGNode,
-    NetworkXBackend,
     NodeType,
     make_edge_id,
     make_node_id,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from argus.platform_core.kg.base import KGBackend
-
-
-_NEO4J_IMAGE = "neo4j:5.20.0-community"
-_NEO4J_TEST_PASSWORD = "test-password"
-
+from argus.platform_core.kg.base import KGBackend
 
 # ---------------------------------------------------------------------------
 # Mini supply-chain graph
@@ -129,114 +105,6 @@ def _build_supply_chain(backend: KGBackend) -> dict[str, str]:
     backend.upsert_edge(_edge(EdgeType.SHIPS_TO, ids["SH1"], ids["NA"]))
 
     return ids
-
-
-# ---------------------------------------------------------------------------
-# Containers
-# ---------------------------------------------------------------------------
-#
-# TODO(kg-testing): migrate to testcontainers' structured wait-strategy API
-# (HttpWaitStrategy / LogMessageWaitStrategy) once they remove the deprecated
-# @wait_container_is_ready decorator. The matching ignore-filter in
-# pyproject.toml suppresses the deprecation that fires from inside the Neo4j
-# fixture today; remove the filter at the same time as this migration.
-
-
-def _new_neo4j_container(*, with_apoc: bool) -> Any:
-    """Construct a configured but not-yet-started Neo4j container."""
-    from testcontainers.neo4j import Neo4jContainer
-
-    container = Neo4jContainer(_NEO4J_IMAGE, password=_NEO4J_TEST_PASSWORD)
-    if with_apoc:
-        container = (
-            container.with_env("NEO4J_PLUGINS", '["apoc"]')
-            .with_env("NEO4J_dbms_security_procedures_unrestricted", "apoc.*")
-            .with_env("NEO4J_dbms_security_procedures_allowlist", "apoc.*")
-            .with_env("NEO4J_apoc_export_file_enabled", "true")
-            .with_env("NEO4J_apoc_import_file_enabled", "true")
-        )
-    return container
-
-
-@pytest.fixture(scope="session")
-def neo4j_container() -> Iterator[Any]:
-    """Spin up Neo4j 5.20-community + APOC once per session."""
-    container = _new_neo4j_container(with_apoc=True)
-    container.start()
-    try:
-        yield container
-    finally:
-        container.stop()
-
-
-@pytest.fixture(scope="session")
-def neo4j_no_apoc_container() -> Iterator[Any]:
-    """Spin up a vanilla Neo4j 5.20-community (no APOC) for the missing-plugin test."""
-    container = _new_neo4j_container(with_apoc=False)
-    container.start()
-    try:
-        yield container
-    finally:
-        container.stop()
-
-
-# ---------------------------------------------------------------------------
-# Backend fixtures
-# ---------------------------------------------------------------------------
-
-
-def _neo4j_config(container: Any, *, name: str = "neo4j-test") -> KGBackendConfig:
-    from pydantic import SecretStr
-
-    return KGBackendConfig(
-        name=name,
-        neo4j_uri=container.get_connection_url(),
-        neo4j_user="neo4j",
-        neo4j_password=SecretStr(_NEO4J_TEST_PASSWORD),
-    )
-
-
-@pytest.fixture
-def neo4j_backend(neo4j_container: Any) -> Iterator[KGBackend]:
-    """Function-scoped Neo4jBackend pointing at the session container; cleared per test."""
-    from argus.platform_core.kg.neo4j_backend import Neo4jBackend
-
-    backend = Neo4jBackend(_neo4j_config(neo4j_container))
-    backend.connect()
-    backend.clear()
-    try:
-        yield backend
-    finally:
-        backend.disconnect()
-
-
-@pytest.fixture
-def networkx_backend() -> Iterator[KGBackend]:
-    """Function-scoped NetworkXBackend, connected and empty."""
-    backend = NetworkXBackend(KGBackendConfig(name="nx-test"))
-    backend.connect()
-    try:
-        yield backend
-    finally:
-        backend.disconnect()
-
-
-@pytest.fixture(
-    params=[
-        "networkx",
-        pytest.param("neo4j", marks=[pytest.mark.integration]),
-    ],
-)
-def backend(request: pytest.FixtureRequest) -> KGBackend:
-    """Parametrised backend fixture used by parity tests.
-
-    The ``neo4j`` parameter carries the ``integration`` marker so a
-    default ``pytest`` run (which excludes ``-m integration``) only
-    exercises the NetworkX variant. ``pytest -m integration`` flips it.
-    """
-    fixture_name = "networkx_backend" if request.param == "networkx" else "neo4j_backend"
-    fixture_value: KGBackend = request.getfixturevalue(fixture_name)
-    return fixture_value
 
 
 @pytest.fixture
